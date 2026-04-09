@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block title %}
+    {% if customer.pk %}
+        Editar {{ customer.name }}
+    {% else %}
+        Crear Nuevo Usuario
+    {% endif %}
+{% endblock %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+
+<div class="admin-container">
+    
+    <aside class="admin-sidebar">
+        <div class="admin-menu-group">
+            <h3 class="admin-menu-title">Acciones</h3>
+            <ul class="admin-menu-list">
+                <li><a href="{% url 'administrator:customer_list' %}" class="admin-menu-link">← Volver al listado</a></li>
+                <li><a href="{% url 'administrator:admin_dashboard' %}" class="admin-menu-link">Ir al Dashboard</a></li>
+            </ul>
+        </div>
+    </aside>
+
+    <main>
+        <div class="admin-header">
+            <h1 class="admin-title">
+                {% if customer.pk %}
+                    Editando: <span style="color: var(--coral);">{{ customer.name }}</span>
+                {% else %}
+                    Creando Nuevo Cliente
+                {% endif %}
+            </h1>
+        </div>
+
+        <div class="edit-wrapper">
+            <form method="post">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div style="color: white; background: var(--danger); padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+                
+                <h4 style="margin-bottom: 1rem; color: var(--coral);">Información Personal</h4>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Nombre</label>
+                        {{ form.name }}
+                        {{ form.name.errors }} </div>
+                    <div class="form-group">
+                        <label class="form-label">Apellidos</label>
+                        {{ form.surnames }}
+                        {{ form.surnames.errors }}
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        {{ form.email }}
+                        <div style="color: var(--danger); font-size: 0.85rem; margin-top: 0.25rem;">
+                            {{ form.email.errors }}
+                        </div>
+                    </div>
+                    {% if not customer.pk %}
+                        <div class="form-group">
+                            <label class="form-label">Contraseña</label>
+                            {{ form.password }}
+                            {% if form.password.help_text %}
+                                <small class="text-muted" style="font-size: 0.75rem; color: var(--muted);">{{ form.password.help_text }}</small>
+                            {% endif %}
+                            {{ form.password.errors }}
+                        </div>
+                    {% endif %}
+                    <div class="form-group">
+                        <label class="form-label">Teléfono</label>
+                        {{ form.phone }}
+                        {{ form.phone.errors }}
+                    </div>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--input-border); margin: 2rem 0;">
+
+                <h4 style="margin-bottom: 1rem; color: var(--coral);">Dirección</h4>
+
+                <div class="form-group full-width">
+                    <label class="form-label">Dirección</label>
+                    {{ form.address }}
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Ciudad</label>
+                        {{ form.city }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Código Postal</label>
+                        {{ form.zip_code }}
+                    </div>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--input-border); margin: 2rem 0;">
+
+                <h4 style="margin-bottom: 1rem; color: var(--coral);">Cuenta</h4>
+
+                <div class="form-grid">
+                    <div class="checkbox-group">
+                        {{ form.is_active }}
+                        <label for="{{ form.is_active.id_for_label }}" style="margin:0; font-weight: 500; cursor: pointer;">Usuario Activo</label>
+                    </div>
+                    {% if not customer.pk %}
+                        <div class="checkbox-group">
+                            {{ form.is_superuser }}
+                            <label for="{{ form.is_superuser.id_for_label }}" style="margin:0; font-weight: 500; cursor: pointer;">Superusuario</label>
+                        </div>
+                    {% endif %}
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
+                    <a href="{% url 'administrator:customer_list' %}" class="btn-cancel">Cancelar</a>
+                    <button type="submit" class="btn-save">Guardar Cliente</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %}

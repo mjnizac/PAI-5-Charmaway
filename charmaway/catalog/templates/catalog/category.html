@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}{{ category.name }} - Catálogo{% endblock %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/catalog.css' %}">
+
+<div class="catalog-container">
+    <main class="catalog-main" style="grid-column: 1 / -1;">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb" style="margin-bottom: 2rem;">
+            <a href="{% url 'home' %}">Home</a>
+            <span class="separator">/</span>
+            <a href="{% url 'catalog:catalog' %}">Catálogo</a>
+            <span class="separator">/</span>
+            <span class="current">{{ category.name }}</span>
+        </nav>
+
+        <!-- Category Header -->
+        <div class="category-header" style="margin-bottom: 2rem; text-align: center;">
+            {% if category.image %}
+            <img src="{{ category.image }}" alt="{{ category.name }}" style="max-width: 200px; border-radius: 8px; margin-bottom: 1rem;">
+            {% endif %}
+            <h1 class="catalog-title">{{ category.name }}</h1>
+            {% if category.description %}
+            <p style="color: var(--muted); max-width: 600px; margin: 1rem auto;">{{ category.description }}</p>
+            {% endif %}
+        </div>
+
+        <div class="products-grid">
+            {% for product in products %}
+            <article class="product-card">
+                {% if product.is_featured %}
+                <span class="product-badge">Destacado</span>
+                {% endif %}
+
+                {% if product.offer_price %}
+                <span class="product-badge discount-badge">
+                    -{{ product.discount_percentage }}%
+                </span>
+                {% endif %}
+
+                <a href="{% url 'catalog:product_detail' product.id %}" class="product-link">
+                    <div class="product-image-wrapper">
+                        {% with main_image=product.images.all|first %}
+                        {% if main_image %}
+                        <img src="{{ main_image.image }}" alt="{{ product.name }}" class="product-image" onerror="this.onerror=null; this.src='{% static 'images/no-image.svg' %}'; this.style.objectFit='contain'; this.style.padding='2rem';">
+                        {% else %}
+                        <img src="{% static 'images/no-image.svg' %}" alt="Sin imagen" class="product-image" style="object-fit: contain; padding: 2rem;">
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+
+                    <div class="product-info">
+                        {% if product.brand %}
+                        <p class="product-brand">{{ product.brand.name }}</p>
+                        {% endif %}
+
+                        <h3 class="product-name">{{ product.name }}</h3>
+
+                        <div class="product-pricing">
+                            {% if product.offer_price %}
+                            <span class="product-price original-price">{{ product.price }} €</span>
+                            <span class="product-price offer-price">{{ product.offer_price }} €</span>
+                            {% else %}
+                            <span class="product-price">{{ product.price }} €</span>
+                            {% endif %}
+                        </div>
+
+                        {% if product.stock > 0 %}
+                        <p class="product-stock in-stock">En stock</p>
+                        {% else %}
+                        <p class="product-stock out-of-stock">Agotado</p>
+                        {% endif %}
+                    </div>
+                </a>
+
+                <form action="{% url 'add_to_cart' product.id %}" 
+                    method="post">
+                    {% csrf_token %}
+                    <button type="submit" 
+                            class="btn-add-cart"
+                            {% if product.stock <= 0 %}disabled style="opacity:0.5; cursor:not-allowed;"{% endif %}>
+                        Añadir al carro
+                    </button>
+                </form>
+            </article>
+            {% empty %}
+            <div class="no-products">
+                <p>No hay productos disponibles en esta categoría.</p>
+                <a href="{% url 'catalog:catalog' %}" class="btn">Ver todo el catálogo</a>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+</div>
+{% endblock %}

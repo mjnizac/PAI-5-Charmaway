@@ -1,0 +1,123 @@
+.auth-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #fff; 
+    padding:16px;
+    box-sizing: border-box;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 560px;
+    background-color: #ff9292;
+    padding: 40px;
+    border-radius: 8px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+.auth-container form{
+  margin-top:8px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  align-items:center;
+}
+.input{
+  width:320px;
+  max-width:90%;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  align-items:stretch;
+  color:#ffffff;
+}
+.input input{
+  height:38px;
+  padding:8px 12px;
+  border-radius:6px;
+  border:1px solid var(--input-border);
+  outline:none;
+  font-size:14px;
+  background:white;
+}
+.input input:focus{
+  box-shadow:0 0 0 3px rgba(99,179,237,0.12);
+  border-color:#77b3d6;
+}
+
+.buttons{
+  margin-top:6px;
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  align-items:center;
+  margin-bottom:6px;
+}
+.btn{
+  min-width:120px;
+  padding:10px 16px;
+  border-radius:6px;
+  font-weight:600;
+  cursor:pointer;
+  border:1px solid rgba(0,0,0,0.08);
+}
+.btn.cancel{
+  background:white;
+  color:#39414a;
+  border:1px solid rgba(57,65,74,0.12);
+}
+.btn.login{
+  background:var(--dark-btn);
+  color:white;
+  border:1px solid rgba(0,0,0,0.15);
+}
+
+.register{
+  margin-top:12px;
+  color:var(--muted);
+  font-size:15px;
+}
+.register a{
+  color:#1e88e5;
+  text-decoration:none;
+  margin-left:6px;
+  font-weight:600;
+}
+
+@media (max-width:760px){
+  .search{width:100%}
+  .avatar{width:130px;height:130px;border-width:8px}
+  .input input{height:40px}
+  .btn{min-width:100px;padding:9px 12px}
+}
+
+.auth-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+    width: 100%;
+    margin-top: 8px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    width: 100%;
+}
+
+.form-grid .input {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+}
+
+.form-grid .input:nth-child(9) {
+    grid-column: 2; 
+}

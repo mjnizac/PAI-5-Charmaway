@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Error{% endblock %}
+
+{% block extra_head %}
+<style>
+.error-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 70vh;
+}
+
+.error-box {
+    background: #fff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    max-width: 450px;
+    text-align: center;
+}
+
+.error-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #d9534f;
+    margin-bottom: 15px;
+}
+
+.error-message {
+    font-size: 16px;
+    margin-bottom: 25px;
+    color: #333;
+}
+
+.error-button {
+    display: inline-block;
+    padding: 12px 20px;
+    background-color: #ff6969;
+    color: white;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 15px;
+    text-decoration: none;
+    transition: background-color .2s ease;
+}
+
+.error-button:hover {
+    background-color: #ff4b4b;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-wrapper">
+    <div class="error-box">
+        <div class="error-title">⚠️ Error</div>
+
+        <div class="error-message">
+            No hay suficiente stock del producto <strong>{{ product_name }}</strong>.
+        </div>
+
+        <a href="{{ back_url|default:'/' }}" class="error-button">Volver</a>
+    </div>
+</div>
+{% endblock %}

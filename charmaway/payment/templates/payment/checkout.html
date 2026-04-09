@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Pagar con Tarjeta{% endblock %}
+
+{% block extra_head %}
+<style>
+    .payment-container {
+        max-width: 500px;
+        margin: 40px auto;
+        padding: 30px;
+        background-color: #ffffff;
+        border: 1px solid #e6e6e6;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    .payment-header {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    .payment-header h2 {
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .payment-header p {
+        color: #555;
+        font-size: 16px;
+    }
+
+    #payment-element {
+        margin-bottom: 25px;
+    }
+
+
+    #submit-button {
+        width: 100%;
+        padding: 14px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #ffffff;
+        background-color: #ff6969; 
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+    #submit-button:hover {
+        background-color: #e65c5c; 
+    }
+
+    #submit-button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+    #payment-message {
+        color: #dc3545;
+        font-size: 14px;
+        text-align: center;
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="payment-container">
+        
+        <div class="payment-header">
+            <h2>Finaliza tu pago</h2>
+            <p>
+                Estás a punto de pagar tu pedido. Por favor, introduce los
+                datos de tu tarjeta.
+            </p>
+        </div>
+
+        <form id="payment-form">
+            {% csrf_token %}
+            
+            <div id="payment-element">
+                </div>
+            
+            <button id="submit-button" type="submit">Pagar</button>
+            
+            <div id="payment-message" role="alert"></div>
+        
+        </form>
+
+    </div>
+{% endblock %}
+
+
+{% block scripts %}
+    <script src="https://js.stripe.com/v3/"></script>
+    
+    <script>
+        const stripePublishableKey = "{{ stripe_publishable_key }}";
+        const createPaymentIntentUrl = "{% url 'payment:create_payment_intent' %}";
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    </script>
+    
+    <script src="{% static 'payment/js/checkout.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home - CharmAway{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Conoce Charmaway, tu tienda online de cosmética que realza tu belleza con productos de alta calidad.">
+    <title>Acerca de Charmaway</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{% static 'css/about.css' %}">
+</head>
+<body>
+    <div class="charmaway-page">
+        <header>
+            <h1>Charmaway</h1>
+            <p>Realza tu belleza con productos de cosmética exclusivos</p>
+        </header>
+
+        <main>
+            <section>
+                <h2>Nuestra Historia</h2>
+                <p>Charmaway nació con la idea de ofrecer cosmética de calidad que inspire confianza y destaque la belleza única de cada persona. Desde nuestros inicios, nos enfocamos en seleccionar productos cuidadosamente, combinando eficacia y elegancia.</p>
+            </section>
+
+            <section>
+                <h2>Nuestra Misión</h2>
+                <p>Queremos que cada cliente descubra productos que le hagan sentir seguro y radiante. Nuestra misión es proporcionar una experiencia de compra sencilla, confiable y con atención personalizada, apoyando una belleza consciente y moderna.</p>
+            </section>
+
+            <section>
+                <h2>Nuestros Valores</h2>
+                <p>En Charmaway valoramos la calidad, la sostenibilidad y la innovación. Nos comprometemos a ofrecer productos éticos, respetuosos con la piel y el medio ambiente, sin comprometer el lujo ni la eficacia que mereces.</p>
+            </section>
+
+            <section>
+                <h2>Contáctanos</h2>
+                <p>¿Tienes preguntas o necesitas asesoramiento? Nuestro equipo está aquí para ayudarte. No dudes en ponerte en contacto con nosotros a través de los siguientes medios, ¡y síguenos en nuestras redes sociales para no perderte ninguna novedad!</p><br>
+                <i class="fa-solid fa-phone"></i> +34 123 456 789 <br>
+                <i class="fa-solid fa-envelope"></i> contacto@charmaway.es <br>
+                <i class="fa-brands fa-facebook" style="margin-right: 4px;"></i>  <i class="fa-brands fa-instagram" style="margin-right: 4px;"></i> <i class="fa-brands fa-x-twitter"></i> @charmaway <br>
+            </section>
+        </main>
+
+        <footer>
+            &copy; 2025 Charmaway. Todos los derechos reservados.
+        </footer>
+    </div>
+</body>
+</html>
+
+
+{% endblock %}
+

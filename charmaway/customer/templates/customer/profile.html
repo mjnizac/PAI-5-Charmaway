@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block title %}Perfil de Cliente{% endblock %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+
+<div class="profile-container">
+  
+
+  <main class="content">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 40px; padding: 20px;">
+      <div style="flex: 1;">
+        <h1>¡Hola cliente!</h1>
+        <div class="address-container">
+            <div>Dirección:</div>
+            <p class="address">{{ customer.address }} </p>
+        </div>
+      </div>
+
+      <aside class="sidebar" style="flex: 0 0 auto;">
+        <a href="{% url 'orders' %}" style="margin-top:10px;">
+          <button class="btn">Pedidos</button>
+        </a>
+        <a href="{% url 'profile_edit' %}">
+          <button class="btn">Editar perfil</button>
+        </a>
+        <a href="{% url 'logout' %}">
+          <button class="btn btn-logout">Cerrar sesión</button>
+        </a>
+      </aside>
+    </div>
+    
+    <h2>Últimas compras</h2>
+      <table style="width:100%; border-collapse:collapse; background-color:#a7a7a7; color:#000; border-radius:8px; overflow:hidden;">
+        <thead>
+            <tr>
+                <th style="text-align:center; padding:12px 8px; border-bottom:1px solid #7a7a7a; background-color:#959595;"></th>
+                <th style="text-align:center; padding:12px 8px; border-bottom:1px solid #7a7a7a; background-color:#959595;">Id. pedido</th>
+                <th style="text-align:center; padding:12px 8px; border-bottom:1px solid #7a7a7a; background-color:#959595;">Fecha de creación</th>
+                <th style="text-align:center; padding:12px 8px; border-bottom:1px solid #7a7a7a; background-color:#959595;">Importe total</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td style="text-align:center; padding:12px 8px; border-top:1px solid #7a7a7a;">
+                  <a href="{% url 'order_detail' order.public_id %}" 
+                    style="color:#000; text-decoration:none; display:inline-flex; align-items:center; gap:6px; transition: color 0.3s, transform 0.2s;"
+                    onmouseover="this.style.color='#007bff'; this.style.transform='scale(1.1)';"
+                    onmouseout="this.style.color='#000'; this.style.transform='scale(1)';">
+                    <i class="fa-solid fa-eye"></i> Ver
+                </a>
+                </td>
+
+                <td style="text-align:center; padding:12px 8px; border-top:1px solid #7a7a7a;">
+                    {{ order.public_id }}
+                </td>
+
+                <td style="text-align:center; padding:12px 8px; border-top:1px solid #7a7a7a;">
+                    {{ order.created_at|date:"d/m/Y" }}
+                </td>
+
+                <td style="text-align:center; padding:12px 8px; border-top:1px solid #7a7a7a;">
+                    {{ order.final_price }} €
+                </td>
+            </tr>
+
+            {% empty %}
+            <tr>
+                <td colspan="4" style="text-align:center; padding:12px 8px; border-top:1px solid #7a7a7a;">
+                    No hay pedidos aún.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+      </table>
+  </main>
+</div>
+
+{% endblock %}

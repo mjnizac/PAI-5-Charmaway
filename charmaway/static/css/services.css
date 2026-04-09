@@ -1,0 +1,15 @@
+/* Services catalog styles - reuses catalog.css styles */
+@import url('catalog.css');
+
+/* Additional styles specific to services */
+.service-duration {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 107, 107, 0.95);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}

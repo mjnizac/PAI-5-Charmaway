@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% block title %}Pedido #{{ order.public_id }}{% endblock %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+
+<div class="admin-container">
+    
+    <aside class="admin-sidebar">
+        <div class="admin-menu-group">
+            <h3 class="admin-menu-title">Navegación</h3>
+            <ul class="admin-menu-list">
+                <li><a href="{% url 'administrator:order_list' %}" class="admin-menu-link">← Volver al listado</a></li>
+                <li><a href="{% url 'administrator:admin_dashboard' %}" class="admin-menu-link">Ir al Dashboard</a></li>
+            </ul>
+        </div>
+    </aside>
+
+    <main>
+        <div class="admin-header">
+            <div>
+                <h1 class="admin-title">Pedido #{{ order.public_id }}</h1>
+                <span style="color: var(--muted); font-size: 0.9rem;">Realizado el {{ order.created_at|date:"d F Y, H:i" }}</span>
+            </div>
+            
+            <div>
+                {% if order.status == 'PROCESSING' %}
+                    <span class="badge-status status-processing" style="font-size: 1rem; padding: 0.5rem 1rem; ">Procesándose</span>
+                {% elif order.status == 'SHIPPED' %}
+                    <span class="badge-status status-shipped" style="font-size: 1rem; padding: 0.5rem 1rem;">Enviado</span>
+                {% elif order.status == 'DELIVERED' %}
+                    <span class="badge-status status-delivered" style="font-size: 1rem; padding: 0.5rem 1rem;">Entregado</span>
+                {% elif order.status == 'CANCELLED' %}
+                    <span class="badge-status status-cancelled" style="font-size: 1rem; padding: 0.5rem 1rem;">Cancelado</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="detail-grid" style="grid-template-columns: 2fr 1fr; gap: 2rem; display: grid;">
+            
+            <div class="edit-wrapper" style="padding: 0;">
+                <div style="padding: 1.5rem; border-bottom: 1px solid var(--input-border); background: #f8f9fa;">
+                    <h4 style="margin: 0; color: var(--dark-btn);">Artículos del Pedido</h4>
+                </div>
+                
+                <table class="items-table" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th style="text-align: left;">Producto</th>
+                            <th style="white-space: nowrap;">Precio Unit.</th>
+                            <th>Cant.</th>
+                            <th style="text-align: right;">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for detail in details %}
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <div style="width: 40px; height: 40px; flex-shrink: 0;">
+                                        {% with image=detail.product.images.all|first %}
+                                            {% if image and image.image %}
+                                                <img src="{{ image.image }}" 
+                                                     style="width: 100%; height: 100%; object-fit: contain; border-radius: 4px; border: 1px solid #eee;"
+                                                     onerror="this.src='{% static 'images/no-image.svg' %}'">
+                                            {% else %}
+                                                <div style="width: 100%; height: 100%; background: #eee; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #999;">
+                                                    📷
+                                                </div>
+                                            {% endif %}
+                                        {% endwith %}
+                                    </div>
+                                    
+                                    <div>
+                                        <div style="font-weight: 600; line-height: 1.2;">{{ detail.product.name }}</div>
+                                        <small style="color: var(--muted); font-size: 0.75rem;">Producto (ID: {{ detail.product.id }})</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ detail.unit_price }}€</td>
+                            <td>x{{ detail.quantity }}</td>
+                            <td style="text-align: right; font-weight: 600;">{{ detail.subtotal }}€</td>
+                        </tr>
+                        {% endfor %}
+
+                        {% if services %}
+                            <tr style="background-color: #fdfdfd; border-top: 2px solid #f0f0f0;">
+                                <th style="text-align: left;">Servicios contratados</th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+
+                            {% for service in services %}
+                            <tr>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <div style="width: 40px; height: 40px; flex-shrink: 0;">
+                                            {% with image=service.service.image %}
+                                                {% if image %}
+                                                    <img src="{{ image }}" 
+                                                        style="width: 100%; height: 100%; object-fit: contain; border-radius: 4px; border: 1px solid #eee;"
+                                                        onerror="this.src='{% static 'images/no-image.svg' %}'">
+                                                {% else %}
+                                                    <div style="width: 100%; height: 100%; background: #eee; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #999;">
+                                                        📷
+                                                    </div>
+                                                {% endif %}
+                                            {% endwith %}
+                                        </div>
+                                        <div>
+                                            <div style="font-weight: 600; line-height: 1.2;">
+                                                {{ service.service.name }} 
+                                            </div>
+                                            <small style="color: var(--muted); font-size: 0.75rem;">Servicio (ID: {{service.service.name}})</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ service.unit_price }}€</td>
+                                <td>x{{ service.quantity }}</td>
+                                <td style="text-align: right; font-weight: 600;">{{ service.subtotal }}€</td>
+                            </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                    <tfoot style="background: #fdfdfd;">
+                        <tr>
+                            <td colspan="3" style="text-align: right; padding-top: 1.5rem; color: var(--muted);">Subtotal:</td>
+                            <td style="text-align: right; padding-top: 1.5rem;">{{ order.subtotal }}€</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="text-align: right; color: var(--muted);">Envío:</td>
+                            <td style="text-align: right;">{{ order.shipping_cost }}€</td>
+                        </tr>
+                        <tr style="font-size: 1.2rem;">
+                            <td colspan="3" style="text-align: right; font-weight: bold; color: var(--dark-btn); border-bottom: none;">Total:</td>
+                            <td style="text-align: right; font-weight: bold; color: var(--coral); border-bottom: none;">{{ order.final_price }}€</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div>
+                
+                <div class="edit-wrapper">
+                    <h4 style="margin-top: 0; color: var(--coral);">Actualizar Estado</h4>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            {{ form.status }}
+                        </div>
+                        <button type="submit" class="btn-save" style="width: 100%;">Actualizar</button>
+                    </form>
+                </div>
+
+                <div class="edit-wrapper">
+                    <h4 style="margin-top: 0; color: var(--dark-btn);">Dirección de Envío</h4>
+                    <p style="margin-bottom: 0.5rem;">{{ order.customer.name|default:"Invitado" }} {{ order.customer.surnames|default:"" }}</p>
+                    <p style="color: var(--muted); line-height: 1.5;">
+                        {{ order.address }}<br>
+                        {{ order.zip_code }} {{ order.city }}
+                    </p>
+                    <hr style="border: 0; border-top: 1px solid var(--input-border);">
+                    
+                    <h4 style="margin-top: 1rem; margin-bottom: 0.5rem; color: var(--dark-btn);">Contacto</h4>
+                    <div style="font-size: 0.9rem;">
+                        <p style="margin-bottom: 0.5rem; white-space: nowrap;">📧 <a href="mailto:{{ order.email }}">{{ order.email }}</a></p>
+                        {% if order.customer.phone %}
+                            <p>📞 {{ order.customer.phone }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if order.notes %}
+                <div class="edit-wrapper" style="background: #fff3cd; border-color: #ffeeba;">
+                    <h4 style="margin-top: 0; color: #856404;">Notas del Cliente</h4>
+                    <p style="color: #856404; font-style: italic;">"{{ order.notes }}"</p>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

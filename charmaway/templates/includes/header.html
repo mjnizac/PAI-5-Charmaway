@@ -1,0 +1,107 @@
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'css/header.css' %}?v=202501231645">
+
+<header class="topbar" role="banner">
+  <div class="container">
+    <a class="logo" href="{% url 'home' %}" aria-label="Inicio">
+        <img src="{% static 'images/charmaway_logo.png' %}" alt="CharmAway logo">
+        <div style="font-weight:700; font-size:18px; color:#ffffff; margin-left:68px" >CharmAway</div>
+    </a>
+
+    <nav class="nav">
+      <a href="{% url 'home' %}">Home</a>
+      <a href="{% url 'catalog:catalog' %}">Catálogo</a>
+      <a href="{% url 'services:services_catalog' %}">Servicios</a>
+      <a href="{% url 'about' %}">Sobre nosotros</a>
+      {% if user.is_superuser %}
+      <a href="{% url 'administrator:admin_dashboard' %}">Admin</a>
+      {% endif %}
+    </nav>
+
+    <div class="search-wrap">
+      <form action="{% if is_services_view %}{% url 'services:services_catalog' %}{% else %}{% url 'catalog:catalog' %}{% endif %}" method="get" class="search" role="search" id="search-form">
+        <select name="department" class="search-filter" aria-label="{% if is_services_view %}Filtrar por servicio{% else %}Filtrar por departamento{% endif %}">
+          <option value="">{% if is_services_view %}Todos los servicios{% else %}Todos los departamentos{% endif %}</option>
+          {% for department in all_departments %}
+          <option value="{{ department.id }}" {% if request.GET.department == department.id|stringformat:'s' %}selected{% endif %}>{{ department.name }}</option>
+          {% endfor %}
+        </select>
+
+        {% if is_services_view %}
+        <select name="category" class="search-filter" id="category-filter" aria-label="Filtrar por categoría">
+          <option value="">Todas las categorías</option>
+          {% for category in all_categories %}
+          <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:'s' %}selected{% endif %}>{{ category.name }}</option>
+          {% endfor %}
+        </select>
+        {% else %}
+        <select name="brand" class="search-filter" id="brand-filter" aria-label="Filtrar por marca">
+          <option value="">Todas las marcas</option>
+          {% for brand in all_brands %}
+          <option value="{{ brand.id }}" {% if request.GET.brand == brand.id|stringformat:'s' %}selected{% endif %}>{{ brand.name }}</option>
+          {% endfor %}
+        </select>
+        {% endif %}
+
+        <input type="search" name="q" id="search-input" placeholder="{% if is_services_view %}Buscar servicio{% else %}Buscar producto{% endif %}" aria-label="{% if is_services_view %}Buscar servicio{% else %}Buscar producto{% endif %}" value="{{ request.GET.q }}" />
+
+        <button type="submit" class="search-btn" aria-label="Buscar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M21 21l-4.35-4.35" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="11" cy="11" r="6" stroke="#333" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </form>
+    </div>
+
+    <div class="actions">
+      <a class="action-btn" id="open-cart" style="cursor: pointer;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 6h15l-1.5 9h-13L4 4H2" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="cart-bubble">{{ cart_item_count }}</span>
+      </a>
+      <a class="action-btn" href="{% url 'order_lookup' %}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M3 4v16M6 4v16M9 4h1v16H9M13 4v16M16 4h2v16h-2M21 4v16" 
+                stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </a>
+      <a class="action-btn" href="{% if user.is_authenticated %}{% url 'profile' %}{% else %}{% url 'login' %}{% endif %}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M12 12a4 4 0 100-8 4 4 0 000 8zM4 20a8 8 0 0116 0" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+  <div id="cart-dropdown" class="cart-dropdown hidden">
+    <div class="cart-dropdown-content" id="cart-content">
+        Cargando carrito...
+    </div>
+  </div>
+</header>
+
+<script>
+// Cart dropdown functionality
+document.getElementById("open-cart").addEventListener("click", function (e) {
+    e.preventDefault();
+
+    const dropdown = document.getElementById("cart-dropdown");
+    dropdown.classList.toggle("hidden");
+
+    fetch("{% url 'view_cart' %}?ajax=1")
+        .then(res => res.text())
+        .then(html => {
+            document.getElementById("cart-content").innerHTML = html;
+        });
+});
+
+document.addEventListener("click", function(e) {
+    const dropdown = document.getElementById("cart-dropdown");
+    const button = document.getElementById("open-cart");
+
+    if (!dropdown.contains(e.target) && !button.contains(e.target)) {
+        dropdown.classList.add("hidden");
+    }
+});
+</script>
+

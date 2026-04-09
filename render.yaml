@@ -1,0 +1,36 @@
+databases:
+  - name: charmawaydb
+    plan: free
+    databaseName: charmaway
+    user: charmaway_user
+
+services:
+  - type: web
+    plan: free
+    name: charmaway
+    runtime: python
+    buildCommand: './build.sh'
+    startCommand: 'python -m gunicorn charmaway.asgi:application -k uvicorn.workers.UvicornWorker'
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: charmawaydb
+          property: connectionString
+
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+
+      - key: MAILJET_API_KEY
+        sync: false
+      - key: MAILJET_SECRET_KEY
+        sync: false
+
+      - key: WEB_CONCURRENCY
+        value: 4

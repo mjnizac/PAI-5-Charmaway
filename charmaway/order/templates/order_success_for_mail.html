@@ -1,0 +1,40 @@
+{% block content %}
+<div>
+    <h1>¡Gracias por tu pedido!</h1>
+
+    <p>Tu pedido <strong>#{{ order.public_id }}</strong> se ha creado correctamente.</p>
+    <p><strong>Estado:</strong> {{ order.get_status_display }}</p>
+    <p><strong>Identificador:</strong> {{ order.public_id }}</p>
+
+    <h2>Resumen del pedido</h2>
+    <div>
+        {% for detail in order.details.all %}
+            <div style="display:flex; justify-content:space-between; padding:4px 0;">
+                <span>{{ detail.product.name }} (x{{ detail.quantity }})</span>
+                <span>{{ detail.subtotal|floatformat:2 }} €</span>
+            </div>
+        {% endfor %}
+
+        {% if order.delivery_option == "DELIVERY" %}
+            <div style="display:flex; justify-content:space-between; padding:4px 0; border-top:1px solid #ccc; margin-top:8px;">
+                <strong style="margin-right: 2px;">Dirección de envío: </strong>
+                <div style="display: flex; flex-direction: column;">
+                    <div style="margin-right: 2px;">{{ order.address }}, </div>
+                    <div style="margin-right: 2px;">{{ order.city }}, </div>
+                    <div>{{ order.zip_code }}</div>
+                </div>
+            </div>
+        {% endif %}
+
+        <div style="display:flex; justify-content:space-between; padding:4px 0; border-top:1px solid #ccc; margin-top:8px;">
+            <strong style="margin-right: 2px;">Gastos de envío:</strong>
+            <div>{{ order.shipping_cost|floatformat:2 }} €</div>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:4px 0; border-top:1px solid #000; margin-top:4px;">
+            <strong style="margin-right: 2px;">Total:</strong>
+            <div>{{ order.final_price|floatformat:2 }} €</div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

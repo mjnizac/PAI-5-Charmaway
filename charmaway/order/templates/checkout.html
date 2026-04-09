@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Checkout{% endblock %}
+
+{% block extra_head %}
+<style>
+.checkout-wrapper {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    max-width: 1100px;
+    margin: 40px auto;
+}
+
+.checkout-container {
+    padding: 25px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.checkout-container h1 {
+    margin-bottom: 20px;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 10px;
+}
+
+.checkout-section {
+    margin-bottom: 25px;
+}
+
+.checkout-label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.checkout-input,
+.checkout-select,
+.checkout-textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.checkout-input:disabled {
+    background-color: #f2f2f2;
+    color: #888;
+}
+
+.checkout-submit {
+    display: inline-block;
+    padding: 12px 25px;
+    background-color: #ff6969;
+    color: white;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    transition: background-color .2s ease;
+}
+
+.checkout-submit:hover {
+    background-color: #ff4b4b;
+}
+
+.cart-summary {
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    height: fit-content;
+    text-align: left;
+}
+
+.cart-summary h3 {
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.cart-item {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.cart-item div {
+    text-align: left;
+}
+
+.cart-item-price {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.cart-totals {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.cart-totals .subtotal-line,
+.cart-totals .shipping-line {
+    margin: 2px 0;
+}
+
+.cart-totals .total-line {
+    margin-top: 15px;
+    font-size: 1.2em;
+}
+
+.cart-item img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-right: 10px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="checkout-wrapper">
+
+    <div class="checkout-container">
+        <h1>Checkout</h1>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="checkout-section">
+                <label class="checkout-label">Método de entrega</label>
+                <select name="delivery_option" id="delivery-select" class="checkout-select" required onchange="updateShippingAndAddress()">
+                    <option value="DELIVERY">Envío</option>
+                    <option value="PICK_UP">Recogida en tienda</option>
+                </select>
+            </div>
+
+            <div class="checkout-section">
+                <label class="checkout-label">Dirección
+                    <input class="checkout-input" type="text" id="address-input" name="address"
+                           data-original="{{ request.user.address|default:'' }}" value="{{ request.user.address|default:'' }}">
+                </label>
+
+                <label class="checkout-label">Ciudad
+                    <input class="checkout-input" type="text" id="city-input" name="city"
+                           data-original="{{ request.user.city|default:'' }}" value="{{ request.user.city|default:'' }}">
+                </label>
+
+                <label class="checkout-label">Código postal
+                    <input class="checkout-input" type="text" id="zip-input" name="zip_code" pattern="\d+" title="Introduce un código postal válido (solo dígitos)."
+                           data-original="{{ request.user.zip_code|default:'' }}" value="{{ request.user.zip_code|default:'' }}">
+                </label>
+
+                <label class="checkout-label">Correo electrónico
+                    <div style="font-weight: normal; font-size: 13px;">Si quieres recibir un correo electrónico de confirmación, usa un correo de dominio público (@gmail, @outlook...) </div>
+                    <input class="checkout-input" type="email" id="email-input" name="email"
+                           value="{{ request.user.email|default:'' }}">
+                </label>
+            </div>
+
+            <div class="checkout-section">
+                <label class="checkout-label">Método de pago
+                    <select name="payment_method" class="checkout-select" required>
+                        <option value="tarjeta_credito" {% if customer.prefered_payment_method == "tarjeta_credito" %}selected{% endif %}>
+                            Tarjeta de crédito
+                        </option>
+                        <option value="contrareembolso" {% if customer.prefered_payment_method == "contrareembolso" %}selected{% endif %}>
+                            Contrareembolso
+                        </option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="checkout-section">
+                <label class="checkout-label">Notas
+                    <textarea name="notes" rows="3" class="checkout-textarea"></textarea>
+                </label>
+            </div>
+
+            <button type="submit" class="checkout-submit">Hacer pedido</button>
+        </form>
+    </div>
+
+    <div class="cart-summary">
+        <h3>Tu Carrito</h3>
+        <hr>
+
+        {% if items %}
+            {% for item in items %}
+                <div class="cart-item">
+                    {% if item.product %}
+                        <img src="{{ item.product.images.first.image|default:'/static/images/no-image.svg' }}">
+                        <div style="flex-grow:1; text-align:left;">
+                            <strong>{{ item.product.name }}</strong>
+                        </div>
+                    {% elif item.service %}
+                        <img src="{{ item.service.image|default:'/static/images/no-image.svg' }}">
+                        <div style="flex-grow:1; text-align:left;">
+                            <strong>{{ item.service.name }}</strong>
+                        </div>
+                    {% endif %}
+                    <div class="cart-item-price">
+                        {{ item.quantity }} x {{ item.current_price|floatformat:2 }} €
+                    </div>
+                </div>
+            {% endfor %}
+
+            <hr>
+            <div class="cart-totals">
+                <p class="subtotal-line" id="cart-subtotal" data-subtotal="{{ subtotal|stringformat:'f' }}">
+                    Subtotal: {{ subtotal|floatformat:2 }} €
+                </p>
+                <p class="shipping-line">Gastos de envío: <span id="shipping-value">{{ shipping|floatformat:2 }}</span> €</p>
+                <strong class="total-line">Total: <span id="total-value">{{ total|floatformat:2 }}</span> €</strong>
+            </div>
+        {% else %}
+            <p>Tu carrito está vacío.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+    function updateShippingAndAddress() {
+        const subtotal = parseFloat(document.getElementById("cart-subtotal").dataset.subtotal);
+        const delivery = document.getElementById("delivery-select").value;
+
+        let shipping = 0;
+        if (delivery === "DELIVERY") {
+            shipping = subtotal > 20 ? 0 : 2.99;
+        }
+        document.getElementById("shipping-value").innerText = shipping.toFixed(2);
+        document.getElementById("total-value").innerText = (subtotal + shipping).toFixed(2);
+
+        const fields = ["address", "city", "zip"];
+        fields.forEach(id => {
+            const input = document.getElementById(id + "-input");
+            if (delivery === "PICK_UP") {
+                input.disabled = true;
+                input.value = "";
+                input.removeAttribute("required");
+            } else {
+                input.disabled = false;
+                input.value = input.dataset.original;
+                input.setAttribute("required", "required");
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', updateShippingAndAddress);
+</script>
+{% endblock %}

@@ -1,0 +1,68 @@
+/* payment/static/payment/css/checkout.css */
+
+
+.payment-container {
+    max-width: 500px; 
+    margin: 40px auto; 
+    padding: 30px;
+    background-color: #ffffff;
+    border: 1px solid #e6e6e6;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+
+.payment-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.payment-header h2 {
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.payment-header p {
+    color: #555;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+
+#payment-element {
+    margin-bottom: 25px;
+}
+
+
+#submit-button {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #ff6969;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    
+}
+
+#submit-button:hover {
+    background-color: #e65c5c;
+}
+
+
+#submit-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+
+#payment-message {
+    color: #dc3545;
+    font-size: 14px;
+    text-align: center;
+    margin-top: 15px;
+}

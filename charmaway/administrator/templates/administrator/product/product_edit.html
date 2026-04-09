@@ -1,0 +1,424 @@
+{% extends 'base.html' %}
+{% block title %}
+    {% if product.pk %}
+        Editar {{ product.name }}
+    {% else %}
+        Crear Nuevo Producto
+    {% endif %}
+{% endblock %}
+
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+
+<div class="admin-container">
+    
+    <aside class="admin-sidebar">
+        <div class="admin-menu-group">
+            <h3 class="admin-menu-title">Acciones</h3>
+            <ul class="admin-menu-list">
+                <li><a href="{% url 'administrator:product_list' %}" class="admin-menu-link">← Volver al listado</a></li>
+                <li><a href="{% url 'administrator:admin_dashboard' %}" class="admin-menu-link">Ir al Dashboard</a></li>
+            </ul>
+        </div>
+    </aside>
+
+    <main>
+        <div class="admin-header">
+            <h1 class="admin-title">
+                {% if product.pk %}
+                    Editando: <span style="color: var(--coral);">{{ product.name }}</span>
+                {% else %}
+                    Creando Nuevo Producto
+                {% endif %}
+            </h1>
+        </div>
+
+        <div class="edit-wrapper">
+            <form method="post">
+                {% csrf_token %}
+                
+                <h4 style="margin-bottom: 1rem; color: var(--coral);">Información General del Producto</h4>
+                
+                <div class="form-group full-width">
+                    <label class="form-label">Nombre del Producto</label>
+                    {{ form.name }}
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Marca</label>
+                        {{ form.brand }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Categoría</label>
+                        {{ form.category }}
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Género</label>
+                        {{ form.gender }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Color</label>
+                        {{ form.color }}
+                    </div>
+                </div>
+
+                <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+                    <div class="form-group">
+                        <label class="form-label">Precio ($)</label>
+                        {{ form.price }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Precio Oferta ($)</label>
+                        {{ form.offer_price }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Stock Total</label>
+                        {{ form.stock }}
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label class="form-label">Descripción</label>
+                    {{ form.description }}
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--input-border); margin: 2rem 0;">
+
+                <h4 style="margin-bottom: 1rem; color: var(--coral);">Galería de Imágenes</h4>
+
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
+                    {{ image_formset.management_form }}
+                    
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="text-align: left; font-size: 0.85rem; color: var(--muted);">
+                                <th style="padding-bottom: 0.5rem;">URL Imagen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="images-tbody">
+                            {% for subform in image_formset %}
+                            <tr class="image-row">
+                                {% for hidden in subform.hidden_fields %}
+                                    {{ hidden }}
+                                {% endfor %}
+                                
+                                <td style="padding: 0.5rem 0.5rem 0.5rem 0;">
+                                    {{ subform.image }}
+                                    {% if subform.image.errors %}
+                                        <div style="color:red; font-size:0.8rem">{{ subform.image.errors }}</div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <button type="button" id="add-image-btn" style="margin-top: 1rem; background: #e2e6ea; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: 600; color: #495057;">
+                        + Añadir otra imagen
+                    </button>
+
+                    <small style="color: var(--muted); display: block; margin-top: 0.5rem;">* Pega la URL de la imagen (ej: https://...)</small>
+                </div>
+
+                <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const imageBtn = document.getElementById('add-image-btn');
+                    const imageTableBody = document.getElementById('images-tbody');
+                    const totalImagesInput = document.querySelector('input[name="{{ image_formset.prefix }}-TOTAL_FORMS"]');
+
+                    const MAX_IMAGENES = 1;
+
+                    function checkLimit() {
+                        const currentRows = imageTableBody.querySelectorAll('tr.image-row').length;
+                        
+                        if (currentRows >= MAX_IMAGENES) {
+                            imageBtn.style.display = 'none';
+                        } else {
+                            imageBtn.style.display = 'inline-block';
+                        }
+                    }
+
+                    checkLimit();
+
+                    imageBtn.addEventListener('click', function() {
+                        if (imageTableBody.querySelectorAll('tr.image-row').length >= MAX_IMAGENES) return;
+                        const count = parseInt(totalImagesInput.value);
+                        
+                        const imgInput = `{{ image_formset.empty_form.image|escapejs }}`;
+                        const orderInput = `{{ image_formset.empty_form.order_position|escapejs }}`;
+                        const mainInput = `{{ image_formset.empty_form.is_main|escapejs }}`;
+                        const idInput = `{{ image_formset.empty_form.id|escapejs }}`;
+                        
+                        let newRowHtml = `
+                            <tr class="image-row">
+                                <td style="padding: 0.5rem 0.5rem 0.5rem 0;">
+                                    ${idInput}
+                                    ${imgInput}
+                                </td>
+                                <td style="padding: 0.5rem;">${orderInput}</td>
+                                <td style="padding: 0.5rem;">${mainInput}</td>
+                                <td style="padding: 0.5rem; text-align: center;">
+                                    <button type="button" class="remove-img-btn" style="border:none; background:none; color:var(--danger); font-weight:bold; cursor:pointer; font-size: 1.2rem;">&times;</button>
+                                </td>
+                            </tr>
+                        `;
+
+                        newRowHtml = newRowHtml.replace(/__prefix__/g, count);
+
+                        imageTableBody.insertAdjacentHTML('beforeend', newRowHtml);
+
+                        totalImagesInput.value = count + 1;
+
+                        checkLimit();
+                    });
+
+                    imageTableBody.addEventListener('click', function(e) {
+                        if (e.target && e.target.classList.contains('remove-img-btn')) {
+                            const row = e.target.closest('tr');
+                            if (row) {
+                                row.remove();
+                                checkLimit();
+                            }
+                        }
+                    });
+                });
+                </script>
+
+                <hr style="border: 0; border-top: 1px solid var(--input-border); margin: 2rem 0;">
+
+                <h4 style="margin-bottom: 1rem; color: var(--coral);">Tallas y Stock</h4>
+                
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
+                    {{ size_formset.management_form }}
+
+                    <div id="sizes-container" class="form-grid" style="gap: 1rem;">
+                        {% for subform in size_formset %}
+                            <div class="size-row" style="background: white; padding: 0.75rem; border: 1px solid var(--input-border); border-radius: 4px; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 1rem; position: relative;">
+                                
+                                {% for hidden in subform.hidden_fields %}
+                                    {{ hidden }}
+                                {% endfor %}
+
+                                <div style="flex: 1; min-width: 120px;">
+                                    <label style="font-size: 0.75rem; color: var(--muted); display:block; margin-bottom: 0.25rem;">Talla</label>
+                                    {{ subform.size }}
+                                    {% if subform.size.errors %}
+                                        <div style="color:red; font-size:0.7rem">
+                                            {{ subform.size.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <div style="flex: 1; min-width: 120px;">
+                                    <label style="font-size: 0.75rem; color: var(--muted); display:block; margin-bottom: 0.25rem;">Stock</label>
+                                    {{ subform.stock }}
+                                    {% if subform.stock.errors %}<div style="color:red; font-size:0.7rem">{{ subform.stock.errors }}</div>{% endif %}
+                                </div>
+
+                                <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
+
+                                {% if subform.instance.pk %}
+                                    <label style="font-size: 0.7rem; color: var(--danger); margin-bottom: 0.5rem;">Quitar</label>
+                                        <div title="Marcar para eliminar al guardar">
+                                            {{ subform.DELETE }}
+                                        </div>
+                                    {% else %}
+                                        <button type="button" onclick="this.closest('.size-row').remove()" style="border: none; background: none; color: var(--danger); font-weight: bold; cursor: pointer; font-size: 1.2rem; line-height: 1;"></button>
+                                    {% endif %}
+                                </div>
+
+                                {% if subform.non_field_errors %}
+                                    <div style="flex-basis: 100%; background-color: #ffebee; color: #c62828; padding: 0.5rem; border-radius: 4px; font-size: 0.85rem; margin-bottom: 0.5rem; border: 1px solid #ffcdd2;">
+                                        {% for error in subform.non_field_errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div id="empty-form-template" style="display:none;">
+                        <div class="size-row new-row" style="background: white; padding: 0.75rem; border: 1px solid var(--input-border); border-radius: 4px; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 1rem; position: relative; margin-top: 1rem;">
+                            {% for hidden in size_formset.empty_form.hidden_fields %}
+                                {{ hidden }}
+                            {% endfor %}
+                            
+                            <div style="flex: 1; min-width: 120px;">
+                                <label style="font-size: 0.75rem; color: var(--muted); display:block; margin-bottom: 0.25rem;">Talla</label>
+                                {{ size_formset.empty_form.size }}
+                            </div>
+
+                            <div style="flex: 1; min-width: 120px;">
+                                <label style="font-size: 0.75rem; color: var(--muted); display:block; margin-bottom: 0.25rem;">Stock</label>
+                                {{ size_formset.empty_form.stock }} 
+                            </div>
+
+                            {% if subform.instance.pk %}
+                                        <div title="Marcar para eliminar al guardar">
+                                            {{ subform.DELETE }}
+                                        </div>
+                                    {% else %}
+                                        <button type="button" onclick="this.closest('.size-row').remove()" style="border: none; background: none; color: var(--danger); font-weight: bold; cursor: pointer; font-size: 1.2rem; line-height: 1;"></button>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <button type="button" id="add-size-btn" style="margin-top: 1rem; background: #e2e6ea; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: 600; color: #495057;">
+                        + Añadir otra talla y stock
+                    </button>
+                    
+                    <div style="margin-top: 1rem; font-size: 0.9rem; color: var(--muted);">
+                        * Suma actual de tallas: <strong id="current-sum">0</strong> / Stock Total: <strong id="target-stock">0</strong>
+                        <div id="stock-warning" style="display: none; color: #e74c3c; margin-top: 0.5rem; font-weight: 600;">
+                            ⚠️ La suma de las tallas no coincide con el Stock Total del producto.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="checkbox-group">
+                        {{ form.is_available }}
+                        <label style="margin:0; font-weight: 500;">Disponible para venta</label>
+                    </div>
+                    <div class="checkbox-group">
+                        {{ form.is_featured }}
+                        <label style="margin:0; font-weight: 500;">Producto Destacado</label>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                    <a href="{% url 'administrator:product_list' %}" class="admin-menu-link">Cancelar</a>
+                    <button type="submit" class="btn-save" id="submit-btn">Guardar Todo</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sizesContainer = document.getElementById('sizes-container');
+    const addSizeBtn = document.getElementById('add-size-btn');
+    const totalFormsInput = document.querySelector('input[name="{{ size_formset.prefix }}-TOTAL_FORMS"]');
+
+    addSizeBtn.addEventListener('click', function() {
+        const currentFormCount = parseInt(totalFormsInput.value);
+       
+        const inputSize = `{{ size_formset.empty_form.size|escapejs }}`;
+        const inputStock = `{{ size_formset.empty_form.stock|escapejs }}`;
+        const inputId = `{{ size_formset.empty_form.id|escapejs }}`;
+       
+        let newRowHtml = `
+            <div class="size-row" style="background: white; padding: 0.75rem; border: 1px solid #dfe6e9; border-radius: 4px; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 1rem; position: relative;">
+                ${inputId}
+                <div style="flex: 1;">
+                    <label style="font-size: 0.75rem; color: #636e72; display:block; margin-bottom: 0.25rem;">Talla</label>
+                    ${inputSize}
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-size: 0.75rem; color: #636e72; display:block; margin-bottom: 0.25rem;">Stock</label>
+                    ${inputStock}
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <label style="font-size: 0.7rem; color: #e74c3c;"></label>
+                    <button type="button" class="remove-row-btn" style="border: none; background: none; color: #e74c3c; font-weight: bold; cursor: pointer; font-size: 1.2rem;"></button>
+                </div>
+            </div>
+        `;
+       
+        newRowHtml = newRowHtml.replace(/__prefix__/g, currentFormCount);
+       
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = newRowHtml.trim();
+        const newRow = tempDiv.firstChild;
+       
+        newRow.querySelector('.remove-row-btn').addEventListener('click', function() {
+            newRow.remove();
+            validateStock();
+        });
+       
+        sizesContainer.appendChild(newRow);
+        totalFormsInput.value = currentFormCount + 1;
+       
+        validateStock();
+    });
+
+    document.querySelectorAll('.remove-row-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.closest('.size-row').remove();
+            validateStock();
+        });
+    });
+
+    const mainStockInput = document.getElementById('id_stock');
+    const submitBtn = document.getElementById('submit-btn');
+    const warningDiv = document.getElementById('stock-warning');
+    const currentSumSpan = document.getElementById('current-sum');
+    const targetStockSpan = document.getElementById('target-stock');
+
+    function validateStock() {
+        const mainStock = parseInt(mainStockInput.value) || 0;
+        targetStockSpan.innerText = mainStock;
+
+        let sum = 0;
+        let hasSizes = false;
+
+        const stockInputs = sizesContainer.querySelectorAll('input[name$="-stock"]');
+       
+        stockInputs.forEach(input => {
+            const row = input.closest('.size-row');
+            const deleteCheckbox = row.querySelector('input[name$="-DELETE"]');
+           
+            if (!deleteCheckbox || !deleteCheckbox.checked) {
+                const val = parseInt(input.value);
+                if (!isNaN(val)) {
+                    sum += val;
+                    hasSizes = true;
+                }
+            }
+        });
+
+        currentSumSpan.innerText = sum;
+
+        if (sum !== mainStock) {
+            warningDiv.style.display = 'block';
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.5';
+            submitBtn.style.cursor = 'not-allowed';
+            currentSumSpan.style.color = '#e74c3c';
+        } else {
+            warningDiv.style.display = 'none';
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+            currentSumSpan.style.color = '#27ae60';
+        }
+    }
+   
+    if (mainStockInput) {
+        mainStockInput.addEventListener('input', validateStock);
+    }
+
+    sizesContainer.addEventListener('input', function(e) {
+        if (e.target.name && (e.target.name.endsWith('-stock') || e.target.name.endsWith('-DELETE'))) {
+            validateStock();
+        }
+    });
+   
+    sizesContainer.addEventListener('change', function(e) {
+        if (e.target.name && e.target.name.endsWith('-DELETE')) {
+            validateStock();
+        }
+    });
+
+    validateStock();
+});
+</script>
+{% endblock %}

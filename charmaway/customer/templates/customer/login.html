@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Iniciar sesión{% endblock %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+<div class="auth-wrapper" style="margin-top: 100px;">
+<div class="auth-container">
+  <h1 style="color:#ffffff">Iniciar sesión</h1>
+  
+
+  <form method="post" action="{% url 'login' %}">
+    {% csrf_token %}
+    <div class="input">
+      <label for="email" style="font-size: 13px; align-self: flex-start; color:#ffffff">Correo electrónico</label>
+      <input type="email" name="username" placeholder="Correo electrónico" required>
+    </div>
+    <div class="input">
+      <label for="password" style="font-size: 13px; align-self: flex-start; color:#ffffff"">Contraseña</label>
+      <input type="password" name="password" placeholder="Contraseña" required>
+    </div>
+
+    {% if form.errors %}
+      <div style="width:100%; max-width:560px; background-color:#ffe5e5; border:1px solid #ff4c4c; color:#a80000; padding:16px; border-radius:8px; margin:0 auto 16px auto; text-align:left; box-sizing:border-box;">
+        <div style="font-weight:600; margin-bottom:8px; font-size:15px; display:flex; align-items:center; gap:6px;">
+          <strong>Se encontraron errores:</strong>
+        </div>
+        <ul style="list-style-type:disc; padding-left:20px; margin:0;">
+          {% for field in form %}
+            {% for error in field.errors %}
+              <li style="margin-bottom:4px;"><span style="font-weight:600;">{{ field.label }}:</span> {{ error }}</li>
+            {% endfor %}
+          {% endfor %}
+          {% for error in form.non_field_errors %}
+            <li style="margin-bottom:4px;">{{ error }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+    
+    <div class="buttons">
+      <button type="button" class="btn cancel" onclick="history.back()">Cancelar</button>
+      <button type="submit" class="btn login">Iniciar sesión</button>
+    </div>
+  </form>
+
+  <p class="register" style="color:#ffffff">O regístrate <a href="{% url 'register' %}">aquí</a></p>
+</div>
+</div>
+{% endblock %}

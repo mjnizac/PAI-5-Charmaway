@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.name }}{% endblock %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/product-detail.css' %}">
+
+<div class="product-detail-container">
+    <!-- Breadcrumb Navigation -->
+    <nav class="breadcrumb">
+        <a href="{% url 'home' %}">Home</a>
+        <span class="separator">/</span>
+        <a href="{% url 'catalog:catalog' %}">Catálogo</a>
+        {% if product.category %}
+        <span class="separator">/</span>
+        <a href="{% url 'catalog:catalog' %}?{% if product.category.department %}department={{ product.category.department.id }}&{% endif %}category={{ product.category.id }}{% if product.brand %}&brand={{ product.brand.id }}{% endif %}">{{ product.category.name }}</a>
+        {% endif %}
+        <span class="separator">/</span>
+        <span class="current">{{ product.name }}</span>
+    </nav>
+
+    <div class="product-content">
+        <!-- Product Images Section -->
+        <div class="product-gallery">
+            <div class="main-image-wrapper">
+                {% if main_image %}
+                <img id="main-image" src="{{ main_image.image }}" alt="{{ product.name }}" class="main-image" onerror="this.onerror=null; this.src='{% static 'images/no-image.svg' %}'; this.style.objectFit='contain'; this.style.padding='2rem';">
+                {% else %}
+                <img id="main-image" src="{% static 'images/no-image.svg' %}" alt="Sin imagen" class="main-image" style="object-fit: contain; padding: 2rem;">
+                {% endif %}
+            </div>
+
+            {% if images.count > 1 %}
+            <div class="thumbnail-gallery">
+                {% for image in images %}
+                <img src="{{ image.image }}"
+                     alt="{{ product.name }}"
+                     class="thumbnail {% if image == main_image %}active{% endif %}"
+                     onclick="changeMainImage('{{ image.image }}', this)">
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Product Information Section -->
+        <div class="product-details">
+            {% if product.brand %}
+            <p class="product-brand">{{ product.brand.name }}</p>
+            {% endif %}
+
+            <h1 class="product-title">{{ product.name }}</h1>
+
+            {% if product.category %}
+            <p class="product-category">
+                <span class="label">Categoría:</span>
+                <a href="{% url 'catalog:catalog' %}?{% if product.category.department %}department={{ product.category.department.id }}&{% endif %}category={{ product.category.id }}{% if product.brand %}&brand={{ product.brand.id }}{% endif %}">{{ product.category.name }}</a>
+            </p>
+            {% endif %}
+
+            <!-- Pricing -->
+            <div class="product-pricing">
+                {% if product.offer_price %}
+                <div class="price-group">
+                    <span class="original-price">{{ product.price }} €</span>
+                    <span class="offer-price">{{ product.offer_price }} €</span>
+                </div>
+                {% else %}
+                <span class="current-price">{{ product.price }} €</span>
+                {% endif %}
+            </div>
+
+            <!-- Product Description -->
+            {% if product.description %}
+            <div class="product-description">
+                <h2 class="section-title">Descripción</h2>
+                <p>{{ product.description }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Product Attributes -->
+            <div class="product-attributes">
+                {% if product.gender %}
+                <div class="attribute">
+                    <span class="attribute-label">Género:</span>
+                    <span class="attribute-value">{{ product.gender }}</span>
+                </div>
+                {% endif %}
+
+                {% if product.color %}
+                <div class="attribute">
+                    <span class="attribute-label">Color:</span>
+                    <span class="attribute-value">{{ product.color }}</span>
+                </div>
+                {% endif %}
+
+                {% if product.material %}
+                <div class="attribute">
+                    <span class="attribute-label">Material:</span>
+                    <span class="attribute-value">{{ product.material }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Size Selection -->
+            {% if sizes %}
+            <div class="size-selection">
+                <h3 class="section-title">Selecciona tamaño:</h3>
+                <div class="size-options">
+                    {% for size in sizes %}
+                    <button class="size-btn {% if size.stock == 0 %}disabled{% endif %}"
+                            {% if size.stock == 0 %}disabled{% endif %}
+                            onclick="selectSize(this, '{{ size.size }}')">
+                        {{ size.size }}
+                        {% if size.stock == 0 %}<span class="out-of-stock-label">Agotado</span>{% endif %}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Stock Information -->
+            <div class="stock-info">
+                {% if product.stock > 0 %}
+                <p class="in-stock">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    En stock ({{ product.stock }} unidades disponibles)
+                </p>
+                {% else %}
+                <p class="out-of-stock">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                    </svg>
+                    Producto agotado
+                </p>
+                {% endif %}
+            </div>
+
+            <!-- Add to Cart -->
+            <div class="product-actions">
+                <form action="{% url 'add_product' product.id %}" method="post" class="quantity-selector">
+                    {% csrf_token %}
+                    <button type="button" class="qty-btn" onclick="decreaseQty()">-</button>
+                    <input type="text" id="quantity" name="quantity" value="1" min="1" max="{{ product.stock }}" class="qty-input" inputmode="numeric" pattern="[0-9]*">
+                    <button type="button" class="qty-btn" onclick="increaseQty()">+</button>
+                    <button type="submit" class="btn-add-cart" {% if product.stock <= 0 %}disabled{% endif %}>
+                        Añadir al carro
+                    </button>
+                </form>
+            </div>
+
+            <!-- Additional Info -->
+            <div class="product-meta">
+                <p><strong>SKU:</strong> PRD-{{ product.id }}</p>
+                <p><strong>Fecha de creación:</strong> {{ product.created_at|date:"d/m/Y" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function changeMainImage(imageSrc, thumbnail) {
+    document.getElementById('main-image').src = imageSrc;
+
+    // Remove active class from all thumbnails
+    document.querySelectorAll('.thumbnail').forEach(thumb => {
+        thumb.classList.remove('active');
+    });
+
+    // Add active class to clicked thumbnail
+    thumbnail.classList.add('active');
+}
+
+function selectSize(button, size) {
+    // Remove active class from all size buttons
+    document.querySelectorAll('.size-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // Add active class to selected button
+    button.classList.add('active');
+}
+
+function increaseQty() {
+    const input = document.getElementById('quantity');
+    const max = parseInt(input.getAttribute('max'));
+    const currentValue = parseInt(input.value);
+
+    if (currentValue < max) {
+        input.value = currentValue + 1;
+    }
+}
+
+function decreaseQty() {
+    const input = document.getElementById('quantity');
+    const min = parseInt(input.getAttribute('min'));
+    const currentValue = parseInt(input.value);
+
+    if (currentValue > min) {
+        input.value = currentValue - 1;
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form.quantity-selector");
+    const qtyInput = document.getElementById("quantity");
+
+    if (!form || !qtyInput) return;
+
+    // Validación para solo permitir números
+    qtyInput.addEventListener('input', function(e) {
+        // Eliminar cualquier caracter que no sea número
+        this.value = this.value.replace(/[^0-9]/g, '');
+
+        const max = parseInt(this.getAttribute('max'));
+        const min = parseInt(this.getAttribute('min')) || 1;
+
+        // Si el campo está vacío, establecer en 1
+        if (this.value === '' || parseInt(this.value) < min) {
+            this.value = min.toString();
+        }
+
+        // Si excede el máximo, establecer al máximo
+        if (parseInt(this.value) > max) {
+            this.value = max.toString();
+        }
+    });
+
+    qtyInput.addEventListener('blur', function(e) {
+        const min = parseInt(this.getAttribute('min')) || 1;
+        // Al perder el foco, asegurar que tenga al menos el valor mínimo
+        if (this.value === '' || parseInt(this.value) < min) {
+            this.value = min.toString();
+        }
+    });
+
+    form.addEventListener("submit", function (e) {
+        const input = document.getElementById("quantity");
+        const max = parseInt(input.max);
+        const value = parseInt(input.value);
+
+        let oldError = document.getElementById("qty-error");
+        if (oldError) oldError.remove();
+
+        if (value > max) {
+            e.preventDefault();
+
+            let error = document.createElement("div");
+            error.id = "qty-error";
+            error.style.color = "red";
+            error.style.marginTop = "8px";
+            error.style.fontWeight = "bold";
+            error.textContent = `Solo puedes añadir un máximo de ${max} unidades.`;
+
+            input.insertAdjacentElement("afterend", error);
+            input.focus();
+        }
+    });
+});
+</script>
+{% endblock %}
+
+{% block footer %}
+<div class="copyright-footer">
+    &copy; 2025 Charmaway. Todos los derechos reservados.
+</div>
+{% endblock %}

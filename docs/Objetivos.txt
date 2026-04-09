@@ -1,0 +1,24 @@
+Objetivos
+1. Definir una Pipeline CI/CD en un proyecto de prueba en un repositorio de código (SCM).
+
+2. Seleccionar al menos tres herramientas de Pruebas de Seguridad (SCA, SAST, IAST, DAST, Secuity IaC) para incluirlas en el Pipeline para dotarlos de capacidades DevSecOps.
+
+3. Integrar las herramientas de Pruebas en el ciclo de vida del desarrollo para hacer Pipeline DevSecOps en un ciclo de integración continua.
+
+4. Desarrollar los tests/preubas correspondientes que permitan detectar vulnerabilidades en cada etapa del Pipeline DevSecOp.
+
+5. Seleccionar una herramienta de gestión de vulnerabilidades para integrar, priorizar y clasificar las vulnerabilidades de Seguridad que se vayan encontrando por las herramientas de testeo en el Pipeline DevSecOps. Como recomendación podría usarse DefectDojo o cualquier otra herramienta que se considere oportuna.
+
+
+
+Normas del entregable
+Cada grupo debe entregar a través de la Plataforma de Enseñanza Virtual y en la actividad preparada para ello un archivo zip, nombrado PAI4-STX.zip, que deberá contener al menos los ficheros siguientes:
+Código fuente de las posibles implementaciones y/o scripts desarrollados y/o configuraciones establecidas en herramientas ya disponibles. Así como de los tests y logs con todas las evidencias de las pruebas realizadas.
+Documento: Informe técnico (PDF) donde se describan las herramientas seleccionadas, el pipeline CI/CD seleccionado, y la integración realizada.
+Documento PDF (máximo 10 páginas), estructura del documento:
+Informe técnico donde se describan las herramientas seleccionadas, el pipeline CI/CD seleccionado, y la integración realizada
+Manual de despliegue y uso con instrucciones de instalación y puesta en funcionamiento del proyecto.
+Grado de completitud donde se indicará de manera trazable el grado de cumplimiento de los objetivos.
+El plazo de entrega de dicho proyecto finaliza el día 27 de abril a las 23:59 horas.
+Los proyectos entregados fuera del plazo establecidos serán considerados inadecuados por el cliente y por tanto entrarán en penalización por cada día de retraso entrega de 10% del total, hasta agotarse los puntos.
+El cliente no aceptará envíos realizados por email, ni mensajes internos de la enseñanza virtual, ni correo interno de la enseñanza virtual. Toda entrega realizada por estos medios conllevará una penalización en la entrega del 10%.

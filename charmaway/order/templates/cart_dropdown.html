@@ -1,0 +1,76 @@
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'css/header.css' %}">
+{% if items %}
+    <h3>Tu Carrito</h3>
+    <hr>
+
+    {% for item in items %}
+        <div style="display:flex; align-items:center; margin:10px 0;">
+
+            {% if item.product %}
+                <img src="{{ item.product.images.first.image|default:'/static/images/no-image.svg' }}"
+                     style="width:50px;height:50px;object-fit:cover;border-radius:6px;margin-right:10px;">
+            {% elif item.service %}
+                <img src="{{ item.service.image|default:'/static/images/no-image.svg' }}"
+                     style="width:50px;height:50px;object-fit:cover;border-radius:6px;margin-right:10px;">
+            {% endif %}
+
+            <div style="flex-grow:1;">
+                <strong>
+                    {% if item.product %}
+                        {{ item.product.name }}
+                    {% elif item.service %}
+                        {{ item.service.name }}
+                    {% endif %}
+                </strong><br>
+
+                <p>{{ item.quantity }} x {{ item.current_price|floatformat:2 }} €</p>
+            </div>
+
+            <div class="cart-item-actions">
+                <div class="btn-row">
+
+                    {% if item.product %}
+                        <a href="{% url 'add_product' item.product.id %}"
+                           class="btn-adjust">+</a>
+
+                        <a href="{% url 'decrease_product_from_cart' item.product.id %}"
+                           class="btn-adjust">-</a>
+
+                    {% elif item.service %}
+                        <a href="{% url 'add_service' item.service.id %}"
+                           class="btn-adjust">+</a>
+
+                        <a href="{% url 'decrease_service_from_cart' item.service.id %}"
+                           class="btn-adjust">-</a>
+                    {% endif %}
+
+                </div>
+
+                {% if item.product %}
+                    <a href="{% url 'remove_product_from_cart' item.product.id %}"
+                       class="btn-remove">Eliminar</a>
+
+                {% elif item.service %}
+                    <a href="{% url 'remove_service_from_cart' item.service.id %}"
+                       class="btn-remove">Eliminar</a>
+                {% endif %}
+            </div>
+
+        </div>
+    {% endfor %}
+
+    <hr>
+    <p style="margin-bottom:2px;">Subtotal: {{ subtotal|floatformat:2 }} €</p>
+    <p style="margin-top:2px; margin-bottom:12px;">Gastos de envío: {{ shipping|floatformat:2 }} €</p>
+    <strong style="font-size:1.2em; display:block; margin-top:10px;">Total: {{ total|floatformat:2 }} €</strong>
+
+    <div class="cart-final-actions">
+        <a href="{% url 'clear_cart' %}" class="btn-clear">Vaciar Carrito</a>
+        <a href="{% url 'checkout' %}" class="btn-checkout">Ir a Checkout</a>
+    </div>
+
+{% else %}
+    <p>Tu carrito está vacío.</p>
+{% endif %}

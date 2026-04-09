@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% block title %}Pedido #{{ order.public_id }}{% endblock %}
+{% load static %}
+
+{% block extra_head %}
+<style>
+    .order-container {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 25px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .order-header {
+        border-bottom: 2px solid #f0f0f0;
+        padding-bottom: 15px;
+        margin-bottom: 25px;
+    }
+
+    .order-section {
+        margin-bottom: 30px;
+    }
+
+    .order-section h3 {
+        margin-bottom: 10px;
+        font-size: 20px;
+    }
+
+    table.order-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    table.order-table th,
+    table.order-table td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        text-align: left;
+    }
+
+    table.order-table th {
+        background-color: #fafafa;
+        font-weight: bold;
+    }
+
+    .order-summary p {
+        font-size: 16px;
+        margin: 5px 0;
+    }
+
+    .back-button {
+        display: inline-block;
+        padding: 12px 25px;
+        background-color: #ff6969;
+        color: white;
+        border-radius: 6px;
+        font-weight: bold;
+        text-decoration: none;
+        transition: background-color .2s ease;
+    }
+
+    .back-button:hover {
+        background-color: #ff4b4b;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="order-container">
+
+    <div class="order-header">
+        <h1>Id. Pedido: {{ order.public_id }}</h1>
+        <h2 style="font-size:18px; color:#555;">Estado: {{ order.get_status_display }}</h2>
+        <p><strong>Fecha:</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
+        <p><strong>Correo electrónico:</strong> {{ order.email }}</p>
+        <p><strong>Método de envío:</strong>
+            {% if order.delivery_option == "DELIVERY" %}
+                Envío a domicilio
+            {% else %}
+                Recogida en tienda
+            {% endif %}
+        </p>
+    </div>
+
+    {% if order.delivery_option == "DELIVERY" %}
+    <div class="order-section">
+        <h3>Dirección de envío</h3>
+        <p>
+            {{ order.address }}<br>
+            {{ order.city }}, {{ order.zip_code }}
+        </p>
+    </div>
+    {% endif %}
+
+    <div class="order-section">
+        <h3>Productos</h3>
+        <table class="order-table">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio unitario</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.details.all %}
+                <tr>
+                    <td>
+                        {% if item.product %}
+                            <a href="{% url 'catalog:product_detail' item.product.id %}" 
+                            style="color:#ff6969; text-decoration:none; font-weight:bold;">
+                            {{ item.product.name }}
+                            </a>
+                        {% elif item.service %}
+                            <a href="{% url 'services:service_detail' item.service.id %}" 
+                            style="color:#ff6969; text-decoration:none; font-weight:bold;">
+                            {{ item.service.name }}
+                            </a>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.unit_price }} €</td>
+                    <td>{{ item.subtotal }} €</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">No hay productos ni servicios en este pedido.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="order-section order-summary">
+        <h3>Resumen de pago</h3>
+        <p><strong>Subtotal:</strong> {{ order.subtotal }} €</p>
+        <p><strong>Gastos de envío:</strong> {{ order.shipping_cost }} €</p>
+        <p><strong>Total:</strong> {{ order.final_price }} €</p>
+        <p><strong>Método de pago:</strong> 
+            {% if order.payment_method == "tarjeta_credito" %}
+                Tarjeta de crédito
+            {% elif order.payment_method == "contrareembolso" %}
+                Contrareembolso
+            {% endif %}
+        </p>
+        {% if order.notes %}
+        <p><strong>Notas:</strong> {{ order.notes }}</p>
+        {% endif %}
+    </div>
+
+    <a href="javascript:history.back()" class="back-button">Volver</a>
+</div>
+{% endblock %}

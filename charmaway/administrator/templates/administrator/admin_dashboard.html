@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+
+<div class="admin-container">
+    
+    <aside class="admin-sidebar">
+        <div class="admin-menu-group">
+            <h3 class="admin-menu-title">Inventario</h3>
+            <ul class="admin-menu-list">
+                <li><a href="{% url 'administrator:product_list' %}" class="admin-menu-link">Todos los Productos</a></li>
+            </ul>
+        </div>
+
+        <div class="admin-menu-group">
+            <h3 class="admin-menu-title">Servicios</h3>
+            <ul class="admin-menu-list">    
+                <li><a href="{% url 'administrator:service_list' %}" class="admin-menu-link">Todos los Servicios</a></li>
+            </ul>
+        </div>
+
+        <div class="admin-menu-group">
+            <h3 class="admin-menu-title">Negocio</h3>
+            <ul class="admin-menu-list">
+                <li><a href="{% url 'administrator:customer_list' %}" class="admin-menu-link">Clientes</a></li>
+                <li><a href="{% url 'administrator:order_list' %}" class="admin-menu-link">Pedidos</a></li>
+                <li><a href="{% url 'administrator:admin_dashboard' %}" class="admin-menu-link active">Dashboard Principal</a></li>
+            </ul>
+        </div>
+    </aside>
+
+    <main>
+        <div class="admin-header">
+            <h1 class="admin-title">Panel de Control</h1>
+            <div style="color: var(--muted);">Bienvenido de nuevo, {{ user.name|default:"Usuario Sin Nombre" }}</div>
+        </div>
+
+        <h3 style="margin-bottom: 1.5rem; color: var(--dark-btn);">Gestión Principal</h3>
+
+        <div class="admin-grid" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+            
+            <article class="admin-card">
+                <div class="card-body" style="text-align: center; display: flex; flex-direction: column; justify-content: space-between; padding: 3rem 2rem;">
+                    <div>
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">📦</div>
+                        <h3 class="card-title" style="font-size: 1.8rem;">Productos</h3>
+                        <p style="color: var(--muted); margin-bottom: 2rem; font-size: 1.1rem;">Inventario de los productos.</p>
+                    </div>
+                    <a href="{% url 'administrator:product_list' %}" class="btn-create" style="background-color: #4a90e2; margin-bottom: 0; font-size: 1.1rem;">Ir a Productos</a>
+                </div>
+            </article>
+
+            <article class="admin-card">
+                <div class="card-body" style="text-align: center; display: flex; flex-direction: column; justify-content: space-between; padding: 3rem 2rem;">
+                    <div>
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">💵</div>
+                        <h3 class="card-title" style="font-size: 1.8rem;">Servicios</h3>
+                        <p style="color: var(--muted); margin-bottom: 2rem; font-size: 1.1rem;">Servicios y sus datos.</p>
+                    </div>
+                    <a href="{% url 'administrator:service_list' %}" class="btn-create" style="background-color: #29dc58ff; margin-bottom: 0; font-size: 1.1rem;">Ver Pedidos</a>
+                </div>
+            </article>
+
+            <article class="admin-card">
+                <div class="card-body" style="text-align: center; display: flex; flex-direction: column; justify-content: space-between; padding: 3rem 2rem;">
+                    <div>
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">👥</div>
+                        <h3 class="card-title" style="font-size: 1.8rem;">Clientes</h3>
+                        <p style="color: var(--muted); margin-bottom: 2rem; font-size: 1.1rem;">Usuarios y perfiles.</p>
+                    </div>
+                    <a href="{% url 'administrator:customer_list' %}" class="btn-create" style="background-color: #50e3c2; margin-bottom: 0; font-size: 1.1rem;">Ver Clientes</a>
+                </div>
+            </article>
+
+            <article class="admin-card">
+                <div class="card-body" style="text-align: center; display: flex; flex-direction: column; justify-content: space-between; padding: 3rem 2rem;">
+                    <div>
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">📄</div>
+                        <h3 class="card-title" style="font-size: 1.8rem;">Pedidos</h3>
+                        <p style="color: var(--muted); margin-bottom: 2rem; font-size: 1.1rem;">Órdenes y envíos.</p>
+                    </div>
+                    <a href="{% url 'administrator:order_list' %}" class="btn-create" style="background-color: #f5a623; margin-bottom: 0; font-size: 1.1rem;">Ver Pedidos</a>
+                </div>
+            </article>
+
+        </div>
+
+        <h3 style="margin-bottom: 1.5rem; color: var(--dark-btn);">Resumen Rápido</h3>
+        
+        <div class="admin-grid" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+            
+            <article class="admin-card">
+                <div class="card-body" style="text-align: center; padding: 2rem;">
+                    <div style="font-size: 2.5rem; font-weight: 700; color: #4a90e2; line-height: 1;">{{ total_products }}</div>
+                    <div style="color: var(--muted); text-transform: uppercase; font-size: 0.8rem; margin-top: 0.5rem; font-weight: 600;">Productos</div>
+                </div>
+            </article>
+
+            <article class="admin-card">
+                <div class="card-body" style="text-align: center; padding: 2rem;">
+                    <div style="font-size: 2.5rem; font-weight: 700; color: #29dc58ff; line-height: 1;">{{ total_services }}</div>
+                    <div style="color: var(--muted); text-transform: uppercase; font-size: 0.8rem; margin-top: 0.5rem; font-weight: 600;">Servicios</div>
+                </div>
+            </article>
+
+            <article class="admin-card">
+                <div class="card-body" style="text-align: center; padding: 2rem;">
+                    <div style="font-size: 2.5rem; font-weight: 700; color: #50e3c2; line-height: 1;">{{ total_clients }}</div>
+                    <div style="color: var(--muted); text-transform: uppercase; font-size: 0.8rem; margin-top: 0.5rem; font-weight: 600;">Clientes</div>
+                </div>
+            </article>
+
+            <article class="admin-card">
+                <div class="card-body" style="text-align: center; padding: 2rem;">
+                    <div style="font-size: 2.5rem; font-weight: 700; color: #f5a623; line-height: 1;">{{ total_orders }}</div>
+                    <div style="color: var(--muted); text-transform: uppercase; font-size: 0.8rem; margin-top: 0.5rem; font-weight: 600;">Pedidos</div>
+                </div>
+            </article>
+
+        </div>
+
+        <div class="admin-grid" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+            
+            <article class="admin-card">
+                <div class="card-body" style="text-align: center; padding: 2rem;">
+                    <div style="font-size: 2.5rem; font-weight: 700; color: #7ed321; line-height: 1;">{{ total_revenue }}€</div>
+                    <div style="color: var(--muted); text-transform: uppercase; font-size: 0.8rem; margin-top: 0.5rem; font-weight: 600;">Ingresos Totales</div>
+                </div>
+            </article>
+
+           <article class="admin-card">
+                <div class="card-body" style="text-align: center; padding: 2rem;">
+                    <div style="font-size: 2.5rem; font-weight: 700; color: #ff0000ff; line-height: 1;">{{ total_lost }}€</div>
+                    <div style="color: var(--muted); text-transform: uppercase; font-size: 0.8rem; margin-top: 0.5rem; font-weight: 600;">Ingresos Perdidos</div>
+                </div>
+            </article> 
+
+            <article class="admin-card">
+                <div class="card-body" style="text-align: center; padding: 2rem;">
+                    <div style="font-size: 2.5rem; font-weight: 700; color: #bd10e0; line-height: 1;">{{ average_order_value|floatformat:2 }}€</div>
+                    <div style="color: var(--muted); text-transform: uppercase; font-size: 0.8rem; margin-top: 0.5rem; font-weight: 600;">Valor Promedio de Pedido</div>
+                </div>
+            </article>
+
+            <article class="admin-card">
+                <div class="card-body" style="text-align: center; padding: 2rem;">
+                    <div style="font-size: 2.5rem; font-weight: 700; color: #8cff00ff; line-height: 1;">{{ total_expected_revenue }}€</div>
+                    <div style="color: var(--muted); text-transform: uppercase; font-size: 0.8rem; margin-top: 0.5rem; font-weight: 600;">Ingresos Totales Esperados</div>
+                </div>
+            </article>
+        </div>
+    </main>
+</div>
+{% endblock %}

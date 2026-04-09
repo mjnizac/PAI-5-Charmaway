@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Registro{% endblock %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+
+<div class="auth-wrapper">
+<div class="auth-container">
+  <h1 style="color:#ffffff;">Registro</h1>
+
+  <form method="post" action="{% url 'register' %}">
+    {% csrf_token %}
+
+    <div class="form-grid">
+      <div class="input" style="align-items:flex-start;">
+        <label for="name" style="font-size: 13px">Nombre</label>
+        <input type="text" name="name" placeholder="Nombre" required value="{% if form.name.value %}{{ form.name.value }}{% endif %}">
+      </div>
+      <div class="input" style="align-items:flex-start;">
+        <label for="surnames" style="font-size: 13px">Apellidos</label>
+        <input type="text" name="surnames" placeholder="Apellidos" required value="{% if form.surnames.value %}{{ form.surnames.value }}{% endif %}">
+      </div>
+      <div class="input" style="align-items:flex-start;">
+        <label for="email" style="font-size: 13px">Correo electrónico</label>
+        <input type="email" name="email" placeholder="Correo electrónico" required value="{% if form.email.value %}{{ form.email.value }}{% endif %}">
+      </div>
+      <div class="input" style="align-items:flex-start;">
+        <label for="phone" style="font-size: 13px">Teléfono</label>
+        <input type="text" name="phone" placeholder="Teléfono" required value="{% if form.phone.value %}{{ form.phone.value }}{% endif %}">
+      </div>
+      <div class="input" style="align-items:flex-start;">
+        <label for="address" style="font-size: 13px">Dirección</label>
+        <input type="text" name="address" placeholder="Dirección" required value="{% if form.address.value %}{{ form.address.value }}{% endif %}">
+      </div>
+      <div class="input" style="align-items:flex-start;">
+        <label for="city" style="font-size: 13px">Ciudad</label>
+        <input type="text" name="city" placeholder="Ciudad" required value="{% if form.city.value %}{{ form.city.value }}{% endif %}">
+      </div>
+      <div class="input" style="align-items:flex-start;">
+        <label for="zip_code" style="font-size: 13px">Código  postal</label>
+        <input type="text" name="zip_code" placeholder="Código Postal" required value="{% if form.zip_code.value %}{{ form.zip_code.value }}{% endif %}">
+      </div>
+      <div class="input" style="align-items:flex-start;">
+        <label for="password1" style="font-size: 13px">Contraseña</label>
+        <input type="password" id="password1" name="password1" placeholder="Contraseña" required value="{% if form.password1.value %}{{ form.password1.value }}{% endif %}">
+      </div>
+      <div class="input" style="align-items:flex-start;">
+        <label for="password2" style="font-size: 13px">Repetir contraseña</label>
+        <input type="password" id="password2" name="password2" placeholder="Repetir contraseña" required value="{% if form.password2.value %}{{ form.password2.value }}{% endif %}">
+      </div>
+    </div>
+
+    {% if form.errors %}
+      <div style="width:100%; max-width:560px; background-color:#ffe5e5; border:1px solid #ff4c4c; color:#a80000; padding:16px; border-radius:8px; margin:0 auto 16px auto; text-align:left; box-sizing:border-box;">
+        <div style="font-weight:600; margin-bottom:8px; font-size:15px; display:flex; align-items:center; gap:6px;">
+          <strong>Se encontraron errores:</strong>
+        </div>
+        <ul style="list-style-type:disc; padding-left:20px; margin:0;">
+          {% for field in form %}
+            {% for error in field.errors %}
+              <li style="margin-bottom:4px;"><span style="font-weight:600;">{{ field.label }}:</span> {{ error }}</li>
+            {% endfor %}
+          {% endfor %}
+          {% for error in form.non_field_errors %}
+            <li style="margin-bottom:4px;">{{ error }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+    
+    <div class="buttons">
+      <button type="button" class="btn cancel" onclick="history.back()">Cancelar</button>
+      <button type="submit" class="btn login">Registrarse</button>
+    </div>
+  </form>
+
+  <p class="register" style="color:#ffffff;">¿Ya tienes cuenta? <a href="{% url 'login' %}">Iniciar sesión</a></p>
+</div>
+</div>
+{% endblock %}

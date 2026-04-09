@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% block title %}{{ service.name }}{% endblock %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/product-detail.css' %}">
+
+<div class="product-detail-container">
+    <!-- Breadcrumb Navigation -->
+    <nav class="breadcrumb">
+        <a href="{% url 'home' %}">Home</a>
+        <span class="separator">/</span>
+        <a href="{% url 'services:services_catalog' %}">Servicios</a>
+        {% if service.category %}
+        <span class="separator">/</span>
+        <a href="{% url 'services:services_catalog' %}?category={{ service.category.id }}">{{ service.category.name }}</a>
+        {% endif %}
+        <span class="separator">/</span>
+        <span class="current">{{ service.name }}</span>
+    </nav>
+
+    <div class="product-content">
+        <!-- Service Image Section -->
+        <div class="product-gallery">
+            <div class="main-image-wrapper">
+                <img src="{{ service.image }}" alt="{{ service.name }}" class="main-image" onerror="this.onerror=null; this.src='{% static 'images/no-image.svg' %}'; this.style.objectFit='contain'; this.style.padding='2rem';">
+            </div>
+        </div>
+
+        <!-- Service Information Section -->
+        <div class="product-details">
+            <h1 class="product-title">{{ service.name }}</h1>
+
+            {% if service.category %}
+            <p class="product-category">
+                <span class="label">Categoría:</span>
+                <a href="{% url 'services:services_catalog' %}?category={{ service.category.id }}">{{ service.category.name }}</a>
+            </p>
+            {% endif %}
+
+            <!-- Pricing -->
+            <div class="product-pricing">
+                {% if service.offer_price %}
+                <div class="price-group">
+                    <span class="original-price">{{ service.price }} €</span>
+                    <span class="offer-price">{{ service.offer_price }} €</span>
+                </div>
+                {% else %}
+                <span class="current-price">{{ service.price }} €</span>
+                {% endif %}
+            </div>
+
+            <!-- Service Description -->
+            {% if service.description %}
+            <div class="product-description">
+                <h2 class="section-title">Descripción</h2>
+                <p>{{ service.description }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Service Attributes -->
+            <div class="product-attributes">
+                {% if service.duration %}
+                <div class="attribute">
+                    <span class="attribute-label">Duración:</span>
+                    <span class="attribute-value">{{ service.duration }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Availability Information -->
+            <div class="stock-info">
+                {% if service.is_available %}
+                <p class="in-stock">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Servicio disponible
+                </p>
+                {% else %}
+                <p class="out-of-stock">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                    </svg>
+                    Servicio no disponible
+                </p>
+                {% endif %}
+            </div>
+
+             <!-- Add to Cart -->
+            <div class="product-actions">
+                <form action="{% url 'add_service' service.id %}" method="post" class="quantity-selector">
+                    {% csrf_token %}
+                    <button type="button" class="qty-btn" onclick="decreaseQty()">-</button>
+                    <input type="text" id="quantity" name="quantity" value="1" min="1" class="qty-input" inputmode="numeric" pattern="[0-9]*">
+                    <button type="button" class="qty-btn" onclick="increaseQty()">+</button>
+                    <button type="submit" class="btn-add-cart" {% if not service.is_available %}disabled{% endif %}>
+                        Añadir al carro
+                    </button>
+                </form>
+            </div>
+
+            <!-- Additional Info -->
+            <div class="product-meta">
+                <p><strong>ID:</strong> SRV-{{ service.id }}</p>
+                <p><strong>Fecha de creación:</strong> {{ service.created_at|date:"d/m/Y" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function increaseQty() {
+    const input = document.getElementById('quantity');
+    const currentValue = parseInt(input.value) || 1;
+    input.value = currentValue + 1;
+}
+
+function decreaseQty() {
+    const input = document.getElementById('quantity');
+    const min = parseInt(input.getAttribute('min')) || 1;
+    const currentValue = parseInt(input.value) || 1;
+
+    if (currentValue > min) {
+        input.value = currentValue - 1;
+    }
+}
+
+// Validación para solo permitir números
+document.addEventListener('DOMContentLoaded', function() {
+    const qtyInput = document.getElementById('quantity');
+    if (qtyInput) {
+        qtyInput.addEventListener('input', function(e) {
+            // Eliminar cualquier caracter que no sea número
+            this.value = this.value.replace(/[^0-9]/g, '');
+
+            // Si el campo está vacío, establecer en 1
+            if (this.value === '' || parseInt(this.value) < 1) {
+                this.value = '1';
+            }
+        });
+
+        qtyInput.addEventListener('blur', function(e) {
+            // Al perder el foco, asegurar que tenga al menos el valor mínimo
+            if (this.value === '' || parseInt(this.value) < 1) {
+                this.value = '1';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+
+{% block footer %}
+<div class="copyright-footer">
+    &copy; 2025 Charmaway. Todos los derechos reservados.
+</div>
+{% endblock %}

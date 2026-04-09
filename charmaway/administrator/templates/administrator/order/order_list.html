@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block title %}Gestión de Pedidos{% endblock %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+
+<div class="admin-container">
+    <aside class="admin-sidebar">
+        <div class="admin-menu-group">
+            <h3 class="admin-menu-title">Inventario</h3>
+            <ul class="admin-menu-list">
+                <li><a href="{% url 'administrator:product_list' %}" class="admin-menu-link">Todos los Productos</a></li>
+            </ul>
+        </div>
+
+        <div class="admin-menu-group">
+            <h3 class="admin-menu-title">Servicios</h3>
+            <ul class="admin-menu-list">    
+                <li><a href="{% url 'administrator:service_list' %}" class="admin-menu-link">Todos los Servicios</a></li>
+            </ul>
+        </div>
+
+        <div class="admin-menu-group">
+            <h3 class="admin-menu-title">Negocio</h3>
+            <ul class="admin-menu-list">
+                <li><a href="{% url 'administrator:customer_list' %}" class="admin-menu-link">Clientes</a></li>
+                <li><a href="{% url 'administrator:order_list' %}" class="admin-menu-link active">Pedidos</a></li>
+                <li><a href="{% url 'administrator:admin_dashboard' %}" class="admin-menu-link">Dashboard Principal</a></li>
+            </ul>
+        </div>
+    </aside>
+
+    <main>
+        <div class="admin-header">
+            <h1 class="admin-title">Pedidos Recientes ({{ orders|length }})</h1>
+
+            <form method="get" class="search-form">
+                <input type="text" 
+                    name="q" 
+                    class="search-input" 
+                    placeholder="🔍 Buscar por ID, email o cliente..." 
+                    value="{{ request.GET.q|default:'' }}">
+                
+                <button type="submit" class="search-btn">
+                    Buscar
+                </button>
+
+                {% if request.GET.q %}
+                    <a href="{% url 'administrator:order_list' %}" class="btn-clear" title="Limpiar filtros">
+                        ✕
+                    </a>
+                {% endif %}
+            </form>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th style="text-align: center;">ID Público</th>
+                        <th style="text-align: center;">Cliente</th>
+                        <th style="text-align: center;">Fecha</th>
+                        <th style="text-align: center;">Total</th>
+                        <th style="text-align: center;">Estado</th>
+                        <th style="text-align: center;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td style="font-family: monospace; font-weight: bold; color: var(--dark-btn);">
+                            {{ order.public_id }}
+                        </td>
+                        <td>
+                            {% if order.customer %}
+                                <strong>{{ order.customer.name }} {{ order.customer.surnames }}</strong><br>
+                                <small style="color: var(--muted);">{{ order.email }}</small>
+                            {% else %}
+                                <span style="color: var(--muted);">Invitado ({{ order.email }})</span>
+                            {% endif %}
+                        </td>
+                        <td style="color: var(--muted); font-size: 0.9rem; white-space: nowrap;">
+                            {{ order.created_at|date:"d M Y H:i" }}
+                        </td>
+                        <td style="font-weight: bold; color: var(--dark-btn);">
+                            {{ order.final_price }}€
+                        </td>
+                        <td style="text-align: center;">
+                            {% if order.status == 'PROCESSING' %}
+                                <span class="badge-status-processing" style="font-size: 1rem; padding: 0.5rem 1rem; white-space: nowrap;">● Procesando</span>
+                            {% elif order.status == 'SHIPPED' %}
+                                <span class="badge-status-shipped" style="font-size: 1rem; padding: 0.5rem 1rem; white-space: nowrap;">● Enviado</span>
+                            {% elif order.status == 'DELIVERED' %}
+                                <span class="badge-status-delivered" style="font-size: 1rem; padding: 0.5rem 1rem; white-space: nowrap;">● Entregado</span>
+                            {% elif order.status == 'CANCELLED' %}
+                                <span class="badge-status-cancelled" style="font-size: 1rem; padding: 0.5rem 1rem; white-space: nowrap;">● Cancelado</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: right;">
+                            <a href="{% url 'administrator:order_detail' order.pk %}" class="btn-sm btn-edit" style="display: inline-block; width: auto; padding: 0.4rem 1rem;">
+                                Ver Detalles
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 3rem; color: var(--muted);">
+                            No hay pedidos registrados aún.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+{% endblock %}

@@ -1,0 +1,247 @@
+{% extends 'base.html' %}
+{% block title %}Servicios{% endblock %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/catalog.css' %}?v=202501231730">
+<link rel="stylesheet" href="{% static 'css/services.css' %}?v=202501231730">
+
+<div class="catalog-container">
+    <aside class="filters-sidebar">
+        <!-- Category Filter -->
+        <div class="filter-section">
+            <h3 class="filter-heading">{% if selected_department_obj %}{{ selected_department_obj.name|upper }}{% else %}CATEGORÍAS{% endif %}</h3>
+            <ul class="filter-list">
+                <li>
+                    <a href="{% url 'services:services_catalog' %}{% if selected_department %}?department={{ selected_department }}{% endif %}" class="filter-link {% if not selected_category %}active{% endif %}">
+                        Todas
+                    </a>
+                </li>
+                {% for category in categories %}
+                <li>
+                    <a href="?{% if selected_department %}department={{ selected_department }}&{% endif %}category={{ category.id }}" class="filter-link {% if selected_category == category.id|stringformat:'s' %}active{% endif %}">
+                        {{ category.name }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </aside>
+
+    <main class="catalog-main">
+        <div class="catalog-header">
+            <h1 class="catalog-title">Catálogo de Servicios</h1>
+
+            <div class="catalog-controls">
+                <div class="sort-control">
+                    <label for="per-page-select">Mostrar:</label>
+                    <select id="per-page-select" class="sort-select" onchange="updatePerPage(this.value)">
+                        <option value="24" {% if per_page == '24' %}selected{% endif %}>24</option>
+                        <option value="36" {% if per_page == '36' %}selected{% endif %}>36</option>
+                        <option value="48" {% if per_page == '48' %}selected{% endif %}>48</option>
+                    </select>
+                </div>
+
+                <div class="sort-control">
+                    <label for="sort-select">Ordenar por:</label>
+                    <select id="sort-select" class="sort-select" onchange="updateSort(this.value)">
+                        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Nombre</option>
+                        <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Precio: Menor a Mayor</option>
+                        <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Precio: Mayor a Menor</option>
+                    </select>
+                </div>
+
+                <div class="results-count">
+                    {{ page_obj.paginator.count }} servicio{{ page_obj.paginator.count|pluralize }}
+                </div>
+            </div>
+        </div>
+
+        {% if search_query %}
+        <div class="search-info">
+            Resultados para: <strong>{{ search_query }}</strong>
+            <a href="{% url 'services:services_catalog' %}" class="clear-search">Limpiar búsqueda</a>
+        </div>
+        {% endif %}
+
+        <div class="products-grid">
+            {% for service in services %}
+            <article class="product-card">
+                <a href="{% url 'services:service_detail' service.id %}" class="product-link">
+                    <div class="product-image-wrapper">
+                        <img src="{{ service.image }}" alt="{{ service.name }}" class="product-image" onerror="this.onerror=null; this.src='{% static 'images/no-image.svg' %}'; this.style.objectFit='contain'; this.style.padding='2rem';">
+                    </div>
+
+                    <div class="product-info">
+                        <h3 class="product-name">{{ service.name }}</h3>
+
+                        {% if service.category %}
+                        <p class="product-category">{{ service.category.name }}</p>
+                        {% endif %}
+
+                        <div class="product-pricing">
+                            {% if service.offer_price %}
+                            <span class="product-price original-price">{{ service.price }} €</span>
+                            <span class="product-price offer-price">{{ service.offer_price }} €</span>
+                            {% else %}
+                            <span class="product-price">{{ service.price }} €</span>
+                            {% endif %}
+                        </div>
+
+                        {% if service.is_available %}
+                        <p class="product-stock in-stock">Disponible</p>
+                        {% else %}
+                        <p class="product-stock out-of-stock">No disponible</p>
+                        {% endif %}
+                    </div>
+                </a>
+
+                <div class="product-actions-wrapper">
+                    <input type="number" id="quantity-service-{{ service.id }}" value="1" min="1" class="qty-input-card">
+                    <a href="#" onclick="event.preventDefault(); buyNowService({{ service.id }});"
+                        class="btn-quick-buy"
+                        {% if not service.is_available %}style="opacity:0.5; cursor:not-allowed; pointer-events:none;"{% endif %}>
+                        Compra rápida
+                    </a>
+                </div>
+
+                <form action="{% url 'add_service' service.id %}" method="post" id="form-add-service-{{ service.id }}">
+                    {% csrf_token %}
+                    <input type="hidden" name="quantity" id="quantity-hidden-service-{{ service.id }}" value="1">
+                    <button type="submit"
+                            class="btn-add-cart"
+                            {% if not service.is_available %}disabled style="opacity:0.5; cursor:not-allowed;"{% endif %}>
+                        Añadir al carro
+                    </button>
+                </form>
+            </article>
+            {% empty %}
+            <div class="no-products">
+                <p>No se encontraron servicios que coincidan con tus criterios de búsqueda.</p>
+                <a href="{% url 'services:services_catalog' %}" class="btn">Ver todos los servicios</a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination">
+            <div class="pagination-info">
+                Mostrando {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ page_obj.paginator.count }} servicios
+            </div>
+
+            <div class="pagination-controls">
+                {% if page_obj.has_previous %}
+                <a href="?page=1{% if selected_department %}&department={{ selected_department }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="page-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 12L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Primera
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if selected_department %}&department={{ selected_department }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="page-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+                {% endif %}
+
+                <div class="page-numbers">
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <span class="page-number active">{{ num }}</span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a href="?page={{ num }}{% if selected_department %}&department={{ selected_department }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="page-number">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if selected_department %}&department={{ selected_department }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="page-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if selected_department %}&department={{ selected_department }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="page-link">
+                    Última
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M6 6L18 12L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </main>
+</div>
+
+<script>
+function updateSort(value) {
+    const url = new URL(window.location);
+    url.searchParams.set('sort', value);
+    url.searchParams.delete('page');
+    window.location.href = url.toString();
+}
+
+function updatePerPage(value) {
+    const url = new URL(window.location);
+    url.searchParams.set('per_page', value);
+    url.searchParams.delete('page');
+    window.location.href = url.toString();
+}
+
+function buyNowService(serviceId) {
+    const quantity = document.getElementById('quantity-service-' + serviceId).value;
+    fetch('/order/buy-now/service/' + serviceId + '/?quantity=' + quantity)
+        .then(() => {
+            window.location.href = '/order/cart/checkout/';
+        })
+        .catch(error => console.error(error));
+}
+
+// Sincronizar el input con el hidden input y validar cantidad
+document.addEventListener('DOMContentLoaded', function() {
+    const qtyInputs = document.querySelectorAll('.qty-input-card');
+    qtyInputs.forEach(function(input) {
+        input.addEventListener('input', function() {
+            if (this.id.includes('service')) {
+                const serviceId = this.id.replace('quantity-service-', '');
+                const hiddenInput = document.getElementById('quantity-hidden-service-' + serviceId);
+
+                // Eliminar cualquier caracter que no sea número
+                this.value = this.value.replace(/[^0-9]/g, '');
+
+                const min = parseInt(this.getAttribute('min')) || 1;
+
+                // Si el campo está vacío, establecer en 1
+                if (this.value === '' || parseInt(this.value) < min) {
+                    this.value = min.toString();
+                }
+
+                hiddenInput.value = this.value;
+            }
+        });
+
+        input.addEventListener('blur', function() {
+            if (this.id.includes('service')) {
+                const serviceId = this.id.replace('quantity-service-', '');
+                const hiddenInput = document.getElementById('quantity-hidden-service-' + serviceId);
+                const min = parseInt(this.getAttribute('min')) || 1;
+
+                // Al perder el foco, asegurar que tenga al menos el valor mínimo
+                if (this.value === '' || parseInt(this.value) < min) {
+                    this.value = min.toString();
+                }
+
+                hiddenInput.value = this.value;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block footer %}
+<div class="copyright-footer">
+    &copy; 2025 Charmaway. Todos los derechos reservados.
+</div>
+{% endblock %}

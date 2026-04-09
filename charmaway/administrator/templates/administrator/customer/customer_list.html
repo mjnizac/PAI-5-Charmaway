@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block title %}Lista de Clientes{% endblock %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+
+<div class="admin-container">
+    
+    <aside class="admin-sidebar">
+        <div class="admin-menu-group">
+            <h3 class="admin-menu-title">Inventario</h3>
+            <ul class="admin-menu-list">
+                <li><a href="{% url 'administrator:product_list' %}" class="admin-menu-link">Todos los Productos</a></li>
+            </ul>
+        </div>
+
+        <div class="admin-menu-group">
+            <h3 class="admin-menu-title">Servicios</h3>
+            <ul class="admin-menu-list">    
+                <li><a href="{% url 'administrator:service_list' %}" class="admin-menu-link">Todos los Servicios</a></li>
+            </ul>
+        </div>
+
+        <div class="admin-menu-group">
+            <h3 class="admin-menu-title">Negocio</h3>
+            <ul class="admin-menu-list">
+                <li><a href="{% url 'administrator:customer_list' %}" class="admin-menu-link active">Clientes</a></li>
+                <li><a href="{% url 'administrator:order_list' %}" class="admin-menu-link">Pedidos</a></li>
+                <li><a href="{% url 'administrator:admin_dashboard' %}" class="admin-menu-link">Dashboard Principal</a></li>
+            </ul>
+        </div>
+
+        <div class="admin-menu-group">
+            <h3 class="admin-menu-title">Creación</h3>
+            <ul class="admin-menu-list">
+                <li><a href="{% url 'administrator:customer_create' %}" class="admin-menu-link active create">+ Usuario</a></li>
+            </ul>
+        </div> 
+    </aside>
+
+    <main>
+        <div class="admin-header">
+            <h1 class="admin-title">Clientes Registrados ({{ customers|length }})</h1>
+            
+            <form method="get" class="search-form">
+                <input type="text" 
+                    name="q" 
+                    class="search-input" 
+                    placeholder="🔍 Buscar por email o cliente..." 
+                    value="{{ request.GET.q|default:'' }}">
+                
+                <button type="submit" class="search-btn">
+                    Buscar
+                </button>
+
+                {% if request.GET.q %}
+                    <a href="{% url 'administrator:customer_list' %}" class="btn-clear" title="Limpiar filtros">
+                        ✕
+                    </a>
+                {% endif %}
+            </form>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th style="text-align: center;">Usuario</th>
+                        <th style="text-align: center;">Email</th>
+                        <th style="text-align: center;">Rol</th>
+                        <th style="text-align: center;">Estado</th>
+                        <th style="text-align: center;">Registro</th>
+                        <th style="text-align: center;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for customer in customers %}
+                    <tr>
+                        <td>
+                            <strong>{{ customer.name }} {{ customer.surnames }}</strong><br>
+                        </td>
+                        <td>{{ customer.email }}</td>
+                        <td>
+                            {% if customer.is_superuser %}
+                                <span class="badge role-admin">Admin</span>
+                            {% else %}
+                                <span class="badge role-user">Cliente</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if customer.is_active %}
+                                <span class="badge-active">● Activo</span>
+                            {% else %}
+                                <span class="badge-inactive">● Bloqueado</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-size: 0.85rem; color: var(--muted); white-space: nowrap;">
+                            {{ customer.creation_date|date:"d M Y" }}
+                        </td>
+                        <td style="vertical-align: middle;">
+                            <div style="display: flex; gap: 0.5rem; justify-content: center; align-items: center;">
+                                <a href="{% url 'administrator:customer_edit' customer.pk %}" class="btn-sm btn-edit" style="display: inline-block; width: auto; padding: 0.4rem 1rem;">
+                                    Editar
+                                </a>
+                                {% if customer.pk != request.user.pk %}
+                                    <a href="{% url 'administrator:customer_delete' customer.pk %}" class="btn-sm btn-delete" style="display: inline-block; width: auto; padding: 0.4rem 1rem;" onclick="return confirm('¿Estás seguro de eliminar este usuario?');">
+                                        Eliminar
+                                    </a>
+                                {% else %}
+                                    <span class="btn-sm" style="display: inline-block; width: auto; padding: 0.4rem 1rem; background: #f1f2f6; color: var(--muted); border: 1px solid #ddd; cursor: not-allowed; white-space: nowrap;">
+                                        Eliminar
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 3rem; color: var(--muted);">
+                            No hay usuarios registrados en el sistema.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+{% endblock %}

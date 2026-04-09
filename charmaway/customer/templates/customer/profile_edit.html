@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Edtar perfil{% endblock %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+
+<div class="auth-wrapper" style="margin-top: 50px;">
+  <div class="auth-container">
+    <h1 style="color: #ffffff">Editar perfil</h1>
+
+    <form method="post" action="{% url 'profile_edit' %}">
+      {% csrf_token %}
+
+      <div class="form-grid">
+        <div class="input" style="align-items:flex-start;">
+          <label for="name" style="font-size: 13px">Nombre</label>
+          <input type="text" name="name" placeholder="Nombre" required value="{{ form.name.value }}">
+        </div>
+        <div class="input" style="align-items:flex-start;">
+          <label for="surnames" style="font-size: 13px">Apellidos</label>
+          <input type="text" name="surnames" placeholder="Apellidos" required value="{{ form.surnames.value }}">
+        </div>
+        <div class="input" style="align-items:flex-start;">
+          <label for="email" style="font-size: 13px">Correo electrónico</label>
+          <input type="email" name="email" placeholder="Correo electrónico" required value="{{ form.email.value }}">
+        </div>
+        <div class="input" style="align-items:flex-start;">
+          <label for="phone" style="font-size: 13px">Teléfono</label>
+          <input type="text" name="phone" placeholder="Teléfono" required value="{{ form.phone.value }}">
+        </div>
+        <div class="input" style="align-items:flex-start;">
+          <label for="address" style="font-size: 13px">Dirección</label>
+          <input type="text" name="address" placeholder="Dirección" required value="{{ form.address.value }}">
+        </div>
+        <div class="input" style="align-items:flex-start;">
+          <label for="city" style="font-size: 13px">Ciudad</label>
+          <input type="text" name="city" placeholder="Ciudad" required value="{{ form.city.value }}">
+        </div>
+        <div class="input" style="align-items:flex-start;">
+          <label for="zip_code" style="font-size: 13px">Código  postal</label>
+          <input type="text" name="zip_code" placeholder="Código Postal" required value="{{ form.zip_code.value }}">
+        </div>
+        <div class="input" style="align-items:flex-start;">
+          <label for="prefered_payment_method" style="font-size: 13px">Método de pago preferido</label>
+          <select name="prefered_payment_method" required style="height:38px; padding:8px 12px; border-radius:6px; border:1px solid var(--input-border); outline:none; font-size:14px; background:white;">
+            <option value="tarjeta_credito" {% if form.prefered_payment_method.value == "tarjeta_credito" %}selected{% endif %}>Tarjeta de crédito</option>
+            <option value="contrareembolso" {% if form.prefered_payment_method.value == "contrareembolso" %}selected{% endif %}>Contrareembolso</option>
+          </select>
+        </div>
+      </div>
+
+      {% if form.errors %}
+        <div style="width:100%; max-width:560px; background-color:#ffe5e5; border:1px solid #ff4c4c; color:#a80000; padding:16px; border-radius:8px; margin:0 auto 16px auto; text-align:left; box-sizing:border-box;">
+          <div style="font-weight:600; margin-bottom:8px; font-size:15px; display:flex; align-items:center; gap:6px;">
+            <strong>Se encontraron errores:</strong>
+          </div>
+          <ul style="list-style-type:disc; padding-left:20px; margin:0;">
+            {% for field in form %}
+              {% for error in field.errors %}
+                <li style="margin-bottom:4px;"><span style="font-weight:600;">{{ field.label }}:</span> {{ error }}</li>
+              {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+              <li style="margin-bottom:4px;">{{ error }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+      <div class="buttons">
+        <button type="button" class="btn cancel" onclick="history.back()">Cancelar</button>
+        <button type="submit" class="btn login">Guardar</button>
+      </div>
+    </form>
+
+  </div>
+</div>
+{% endblock %}

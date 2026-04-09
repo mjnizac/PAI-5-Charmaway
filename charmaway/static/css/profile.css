@@ -1,0 +1,94 @@
+.profile-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 2rem;
+  padding: 2rem;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.avatar {
+  width: 120px;
+  height: 120px;
+  border: 3px solid #000;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.avatar svg {
+  width: 70px;
+  height: 70px;
+}
+
+.btn {
+  background-color: #2f3a48;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  width: 150px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-logout {
+  background-color: #d60e00;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  width: 150px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background-color: #1f2a36;
+}
+
+.content {
+  background-color: #c8c9cb;
+  padding: 2rem;
+  border-radius: 6px;
+  width: 700px;
+}
+
+.address-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.address {
+  margin-bottom: 1rem;
+  margin-left: 0.2rem;
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.orders-table th,
+.orders-table td {
+  text-align: left;
+  padding: 0.75rem;
+}
+
+.orders-table thead {
+  font-weight: bold;
+}
+
+.thumbnail {
+  width: 50px;
+  height: 50px;
+  background-color: #e0e4ea;
+  border: 1px solid #b0b3b8;
+}

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Buscar Pedido{% endblock %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/order.css' %}">
+
+<div class="order-container">
+
+    <div class="order-header">
+        <h1>Buscar Pedido</h1>
+    </div>
+
+    {% if error %}
+    <div class="order-error">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <div class="order-card">
+        <form method="post" class="order-form">
+            {% csrf_token %}
+
+            <label for="order_id">Introduce el ID del pedido:</label>
+            <input name="order_public_id" id="order_public_id" required>
+
+            <button type="submit" class="btn-main">Ver pedido</button>
+        </form>
+    </div>
+
+    <a href="javascript:history.back()" class="btn-back">Volver</a>
+
+</div>
+
+{% endblock %}

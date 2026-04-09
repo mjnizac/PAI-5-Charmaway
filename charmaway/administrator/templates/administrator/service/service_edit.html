@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% block title %}
+    {% if service.pk %}
+        Editar {{ service.name }}
+    {% else %}
+        Crear Nuevo Servicio
+    {% endif %}
+{% endblock %}
+
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+
+<div class="admin-container">
+    
+    <aside class="admin-sidebar">
+        <div class="admin-menu-group">
+            <h3 class="admin-menu-title">Acciones</h3>
+            <ul class="admin-menu-list">
+                <li><a href="{% url 'administrator:service_list' %}" class="admin-menu-link">← Volver al listado</a></li>
+                <li><a href="{% url 'administrator:admin_dashboard' %}" class="admin-menu-link">Ir al Dashboard</a></li>
+            </ul>
+        </div>
+    </aside>
+
+    <main>
+        <div class="admin-header">
+            <h1 class="admin-title">
+                {% if product.pk %}
+                    Editando: <span style="color: var(--coral);">{{ service.name }}</span>
+                {% else %}
+                    Creando Nuevo Servicio
+                {% endif %}
+            </h1>
+        </div>
+
+        <div class="edit-wrapper">
+            <form method="post">
+                {% csrf_token %}
+                
+                <h4 style="margin-bottom: 1rem; color: var(--coral);">Información General del Servicio</h4>
+                
+                <div class="form-group full-width">
+                    <label class="form-label">Nombre del Servicio</label>
+                    {{ form.name }}
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Categoría</label>
+                        {{ form.category }}
+                    </div>
+                </div>
+
+                <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+                    <div class="form-group">
+                        <label class="form-label">Precio ($)</label>
+                        {{ form.price }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Precio Oferta ($)</label>
+                        {{ form.offer_price }}
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label class="form-label">Descripción</label>
+                    {{ form.description }}
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--input-border); margin: 2rem 0;">
+
+                <h4 style="margin-bottom: 1rem; color: var(--coral);">Galería de Imágenes</h4>
+
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
+                    <label class="form-label">URL de la Imagen</label>
+                        {{ form.image }} {% if form.image.errors %}
+                            <div style="color: var(--danger); font-size: 0.85rem; margin-top: 0.5rem;">
+                                {{ form.image.errors }}
+                            </div>
+                        {% endif %}
+
+                    <small style="color: var(--muted); display: block; margin-top: 0.5rem;">* Pega la URL de la imagen (ej: https://...)</small>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--input-border); margin: 2rem 0;">
+
+                <div class="form-grid">
+                    <div class="checkbox-group">
+                        {{ form.is_available }}
+                        <label style="margin:0; font-weight: 500;">Disponible para venta</label>
+                    </div>
+                    <div class="checkbox-group">
+                        {{ form.is_featured }}
+                        <label style="margin:0; font-weight: 500;">Servicio Destacado</label>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                    <a href="{% url 'administrator:service_list' %}" class="admin-menu-link">Cancelar</a>
+                    <button type="submit" class="btn-save">Guardar Todo</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('product-form');
+    const mainStockInput = document.getElementById('id_stock');
+    const sumDisplay = document.getElementById('sum-display');
+    const errorBox = document.getElementById('global-stock-error');
+    const errorSumVal = document.getElementById('error-sum-val');
+    const errorTotalVal = document.getElementById('error-total-val');
+    
+    function calculateSizeSum() {
+        let sum = 0;
+        let hasSizes = false;
+
+        const rows = document.querySelectorAll('.size-row');
+        
+        rows.forEach(row => {
+            const stockInput = row.querySelector('input[name$="-stock"]');
+            const deleteCheckbox = row.querySelector('input[name$="-DELETE"]');
+            const sizeInput = row.querySelector('input[name$="-size"]');
+
+            if (deleteCheckbox && deleteCheckbox.checked) {
+                return;
+            }
+
+            if (stockInput) {
+                const val = parseInt(stockInput.value) || 0;
+                sum += val;
+                hasSizes = true;
+            }
+        });
+
+        return { sum, hasSizes };
+    }
+
+    function updateUI() {
+        const { sum, hasSizes } = calculateSizeSum();
+        if (hasSizes) {
+            sumDisplay.innerText = sum;
+            
+            const mainStock = parseInt(mainStockInput.value) || 0;
+            if (sum === mainStock) {
+                sumDisplay.style.color = 'green';
+                sumDisplay.style.fontWeight = 'bold';
+            } else {
+                sumDisplay.style.color = 'red';
+                sumDisplay.style.fontWeight = 'bold';
+            }
+        }
+    }
+
+    const sizesContainer = document.getElementById('sizes-container');
+    if (sizesContainer) {
+        sizesContainer.addEventListener('input', updateUI);
+        sizesContainer.addEventListener('click', updateUI);
+    }
+
+    if (mainStockInput) {
+        mainStockInput.addEventListener('input', updateUI);
+    }
+
+    form.addEventListener('submit', function(e) {
+        const { sum, hasSizes } = calculateSizeSum();
+
+        if (hasSizes) {
+            const mainStock = parseInt(mainStockInput.value) || 0;
+            
+            if (sum !== mainStock) {
+                e.preventDefault();
+
+                errorSumVal.innerText = sum;
+                errorTotalVal.innerText = mainStock;
+                errorBox.style.display = 'block';
+
+                errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                errorBox.style.display = 'none';
+            }
+        }
+    });
+    updateUI();
+});
+</script>
+{% endblock %}
