@@ -19,7 +19,7 @@ jobs:
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
           cache: pip
 
       - name: Install pip-audit
@@ -66,7 +66,7 @@ jobs:
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: Install Bandit
         run: pip install bandit[toml]
@@ -169,11 +169,11 @@ jobs:
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
           cache: pip
 
       - name: Install system dependencies
-        run: sudo apt-get install -y libmysqlclient-dev
+        run: sudo apt-get install -y default-libmysqlclient-dev pkg-config
 
       - name: Install dependencies
         run: pip install -r requirements.txt
