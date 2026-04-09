@@ -1,5 +1,9 @@
-# PGPI-G1.7
-Proyecto grupal para PGPI curso 2025/2026.
+# Charmaway — PAI-4 DevSecOps
+
+[![CI](https://github.com/mjnizac/PAI-5-Charmaway/actions/workflows/ci.yml/badge.svg)](https://github.com/mjnizac/PAI-5-Charmaway/actions/workflows/ci.yml)
+[![DevSecOps](https://github.com/mjnizac/PAI-5-Charmaway/actions/workflows/devsecops.yml/badge.svg)](https://github.com/mjnizac/PAI-5-Charmaway/actions/workflows/devsecops.yml)
+
+Proyecto Django para la asignatura PAI-4. Incluye un pipeline DevSecOps completo con integración en DefectDojo.
 
 ## Mockups
 Puede encontrarlos [aquí](https://marvelapp.com/prototype/agedh8d)
@@ -93,7 +97,34 @@ Puede encontrarlos [aquí](https://marvelapp.com/prototype/agedh8d)
 
 ### Tests:
 1. Para que django los detecte, los tests de cada módulo tienen que estar en un archivo llamado explícitamente 'tests.py' dentro de cada uno de los módulos correspondientes.
-2. Para ejecutar los tests:
+2. Ejecutar desde `charmaway/`:
    ```bash
+   cd charmaway/
    pytest
    ```
+
+## Pipeline DevSecOps
+
+El pipeline se activa en cada push a `develop` o `main` y ejecuta cuatro fases de seguridad. Los resultados se suben a DefectDojo automáticamente para acumular historial.
+
+| Fase | Herramienta | Tipo | Engagement en DefectDojo |
+|------|------------|------|--------------------------|
+| 1 | pip-audit | SCA — dependencias con CVE | CI – SCA |
+| 2 | Bandit | SAST — código inseguro en Python/Django | CI – SAST |
+| 3 | Trivy | IaC — secrets expuestos, misconfigs | CI – IaC |
+| 4 | OWASP ZAP | DAST — scan dinámico contra la app en ejecución | CI – DAST |
+
+### Secrets necesarios en GitHub
+
+Configurar en *Settings → Secrets and variables → Actions*:
+
+| Secret | Descripción |
+|--------|-------------|
+| `DEFECTDOJO_URL` | URL base de la instancia DefectDojo (ej. `http://localhost:8080`) |
+| `DEFECTDOJO_API_KEY` | Token de API de DefectDojo |
+
+Si los secrets no están configurados, los pasos de subida a DefectDojo se omiten automáticamente (los scans igualmente se ejecutan y quedan como artefactos).
+
+### CodeRabbit
+
+Las PRs hacia `develop` y `main` reciben revisión automática por CodeRabbit. Requiere instalar la [GitHub App de CodeRabbit](https://github.com/apps/coderabbit-ai) en el repositorio. La configuración está en `.coderabbit.yaml`.

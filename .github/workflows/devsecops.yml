@@ -1,0 +1,225 @@
+name: DevSecOps
+
+on:
+  push:
+    branches: [develop, main]
+  workflow_dispatch:
+
+jobs:
+  # ─────────────────────────────────────────────────────────────
+  # Fase 1 — SCA: Software Composition Analysis (pip-audit)
+  # ─────────────────────────────────────────────────────────────
+  sca:
+    name: SCA – pip-audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Run pip-audit (JSON)
+        run: |
+          pip-audit -r requirements.txt --format=json -o pip-audit-report.json || true
+
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pip-audit-report
+          path: pip-audit-report.json
+
+      - name: Upload to DefectDojo
+        if: env.DEFECTDOJO_URL != ''
+        env:
+          DEFECTDOJO_URL: ${{ secrets.DEFECTDOJO_URL }}
+          DEFECTDOJO_API_KEY: ${{ secrets.DEFECTDOJO_API_KEY }}
+        run: |
+          curl -s -X POST "${DEFECTDOJO_URL}/api/v2/reimport-scan/" \
+            -H "Authorization: Token ${DEFECTDOJO_API_KEY}" \
+            -F "product_name=Charmaway" \
+            -F "engagement_name=CI - SCA" \
+            -F "scan_type=pip-audit Scan" \
+            -F "file=@pip-audit-report.json" \
+            -F "active=true" \
+            -F "verified=false" \
+            -F "auto_create_context=true" \
+            -F "commit_hash=${{ github.sha }}" \
+            -F "branch_tag=${{ github.ref_name }}" || echo "DefectDojo upload failed (non-blocking)"
+
+  # ─────────────────────────────────────────────────────────────
+  # Fase 2 — SAST: Static Application Security Testing (Bandit)
+  # ─────────────────────────────────────────────────────────────
+  sast:
+    name: SAST – Bandit
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Bandit
+        run: pip install bandit[toml]
+
+      - name: Run Bandit (JSON)
+        run: |
+          bandit -r charmaway/ \
+            --exclude charmaway/venv \
+            -f json \
+            -o bandit-report.json || true
+
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: bandit-report.json
+
+      - name: Upload to DefectDojo
+        if: env.DEFECTDOJO_URL != ''
+        env:
+          DEFECTDOJO_URL: ${{ secrets.DEFECTDOJO_URL }}
+          DEFECTDOJO_API_KEY: ${{ secrets.DEFECTDOJO_API_KEY }}
+        run: |
+          curl -s -X POST "${DEFECTDOJO_URL}/api/v2/reimport-scan/" \
+            -H "Authorization: Token ${DEFECTDOJO_API_KEY}" \
+            -F "product_name=Charmaway" \
+            -F "engagement_name=CI - SAST" \
+            -F "scan_type=Bandit Scan" \
+            -F "file=@bandit-report.json" \
+            -F "active=true" \
+            -F "verified=false" \
+            -F "auto_create_context=true" \
+            -F "commit_hash=${{ github.sha }}" \
+            -F "branch_tag=${{ github.ref_name }}" || echo "DefectDojo upload failed (non-blocking)"
+
+  # ─────────────────────────────────────────────────────────────
+  # Fase 3 — IaC: Infrastructure as Code scanning (Trivy)
+  # ─────────────────────────────────────────────────────────────
+  iac:
+    name: IaC – Trivy
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Run Trivy (JSON)
+        run: |
+          trivy fs . \
+            --format json \
+            --output trivy-report.json \
+            --exit-code 0 \
+            --severity CRITICAL,HIGH,MEDIUM
+
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: trivy-report.json
+
+      - name: Upload to DefectDojo
+        if: env.DEFECTDOJO_URL != ''
+        env:
+          DEFECTDOJO_URL: ${{ secrets.DEFECTDOJO_URL }}
+          DEFECTDOJO_API_KEY: ${{ secrets.DEFECTDOJO_API_KEY }}
+        run: |
+          curl -s -X POST "${DEFECTDOJO_URL}/api/v2/reimport-scan/" \
+            -H "Authorization: Token ${DEFECTDOJO_API_KEY}" \
+            -F "product_name=Charmaway" \
+            -F "engagement_name=CI - IaC" \
+            -F "scan_type=Trivy Scan" \
+            -F "file=@trivy-report.json" \
+            -F "active=true" \
+            -F "verified=false" \
+            -F "auto_create_context=true" \
+            -F "commit_hash=${{ github.sha }}" \
+            -F "branch_tag=${{ github.ref_name }}" || echo "DefectDojo upload failed (non-blocking)"
+
+  # ─────────────────────────────────────────────────────────────
+  # Fase 4 — DAST: Dynamic Application Security Testing (ZAP)
+  # ─────────────────────────────────────────────────────────────
+  dast:
+    name: DAST – OWASP ZAP
+    runs-on: ubuntu-latest
+
+    env:
+      DJANGO_SECRET_KEY: ci-secret-key-not-for-production
+      DATABASE_URL: sqlite:///ci.db
+      DEBUG: "True"
+      STRIPE_PUBLISHABLE_KEY: pk_test_dummy
+      STRIPE_SECRET_KEY: sk_test_dummy
+      STRIPE_WEBHOOK_SECRET: whsec_dummy
+      MAILJET_API_KEY: dummy
+      MAILJET_SECRET_KEY: dummy
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install system dependencies
+        run: sudo apt-get install -y default-libmysqlclient-dev pkg-config
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Apply migrations
+        working-directory: charmaway
+        run: python manage.py migrate --run-syncdb
+
+      - name: Start Django server
+        working-directory: charmaway
+        run: |
+          python manage.py runserver 8080 &
+          echo $! > /tmp/django.pid
+          sleep 5
+
+      - name: ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: http://localhost:8080
+          fail_action: false
+          issue_title: ZAP Baseline Report
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifact_name: zap-report
+          allow_issue_writing: false
+          cmd_options: "-x report_xml.xml"
+
+      - name: Stop Django server
+        if: always()
+        run: kill $(cat /tmp/django.pid) 2>/dev/null || true
+
+      - name: Upload to DefectDojo
+        if: env.DEFECTDOJO_URL != ''
+        env:
+          DEFECTDOJO_URL: ${{ secrets.DEFECTDOJO_URL }}
+          DEFECTDOJO_API_KEY: ${{ secrets.DEFECTDOJO_API_KEY }}
+        run: |
+          curl -s -X POST "${DEFECTDOJO_URL}/api/v2/reimport-scan/" \
+            -H "Authorization: Token ${DEFECTDOJO_API_KEY}" \
+            -F "product_name=Charmaway" \
+            -F "engagement_name=CI - DAST" \
+            -F "scan_type=ZAP Scan" \
+            -F "file=@report_xml.xml" \
+            -F "active=true" \
+            -F "verified=false" \
+            -F "auto_create_context=true" \
+            -F "commit_hash=${{ github.sha }}" \
+            -F "branch_tag=${{ github.ref_name }}" || echo "DefectDojo upload failed (non-blocking)"

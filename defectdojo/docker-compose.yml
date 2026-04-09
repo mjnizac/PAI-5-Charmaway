@@ -1,0 +1,95 @@
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: defectdojo
+      POSTGRES_USER: defectdojo
+      POSTGRES_PASSWORD: defectdojo
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U defectdojo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+
+  initializer:
+    image: defectdojo/defectdojo-django:latest
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DD_DATABASE_URL: postgresql://defectdojo:defectdojo@postgres:5432/defectdojo
+      DD_SECRET_KEY: defectdojo-local-secret-key
+      DD_ADMIN_USER: admin
+      DD_ADMIN_PASSWORD: admin
+      DD_ADMIN_MAIL: admin@example.com
+      DD_ALLOWED_HOSTS: "*"
+      DD_INITIALIZE: "true"
+    command: ["/entrypoint-initializer.sh"]
+    restart: on-failure
+
+  uwsgi:
+    image: defectdojo/defectdojo-django:latest
+    depends_on:
+      - postgres
+      - redis
+      - initializer
+    environment:
+      DD_DATABASE_URL: postgresql://defectdojo:defectdojo@postgres:5432/defectdojo
+      DD_SECRET_KEY: defectdojo-local-secret-key
+      DD_ALLOWED_HOSTS: "*"
+      DD_CELERY_BROKER_URL: redis://redis:6379/0
+    volumes:
+      - media_data:/app/media
+    command: ["/entrypoint-uwsgi.sh"]
+    restart: unless-stopped
+
+  celeryworker:
+    image: defectdojo/defectdojo-django:latest
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      DD_DATABASE_URL: postgresql://defectdojo:defectdojo@postgres:5432/defectdojo
+      DD_SECRET_KEY: defectdojo-local-secret-key
+      DD_CELERY_BROKER_URL: redis://redis:6379/0
+      DD_ALLOWED_HOSTS: "*"
+    volumes:
+      - media_data:/app/media
+    command: ["/entrypoint-celery-worker.sh"]
+    restart: unless-stopped
+
+  celerybeat:
+    image: defectdojo/defectdojo-django:latest
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      DD_DATABASE_URL: postgresql://defectdojo:defectdojo@postgres:5432/defectdojo
+      DD_SECRET_KEY: defectdojo-local-secret-key
+      DD_CELERY_BROKER_URL: redis://redis:6379/0
+      DD_ALLOWED_HOSTS: "*"
+    command: ["/entrypoint-celery-beat.sh"]
+    restart: unless-stopped
+
+  nginx:
+    image: defectdojo/defectdojo-nginx:latest
+    depends_on:
+      - uwsgi
+    ports:
+      - "8080:8080"
+    volumes:
+      - media_data:/usr/share/nginx/html/media
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  media_data:
