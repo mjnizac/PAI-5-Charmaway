@@ -1,0 +1,35 @@
+language: "es"
+
+reviews:
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - develop
+      - main
+
+  path_filters:
+    - "!docs/**"
+    - "!**/*.md"
+    - "!requirements.txt"
+
+  path_instructions:
+    - path: "charmaway/**/*.py"
+      instructions: |
+        Proyecto Django 5.x. Revisar:
+        - Seguridad: SQL injection, XSS, CSRF, exposición de datos sensibles en logs o respuestas.
+        - Uso correcto de ORM (evitar raw queries sin parametrizar).
+        - Variables sensibles siempre desde os.environ, nunca hardcodeadas.
+        - Validación de entradas en views y forms.
+    - path: ".github/workflows/**"
+      instructions: |
+        Revisar que los secrets se referencian correctamente (${{ secrets.X }}).
+        No exponer valores sensibles en logs (add-mask o env vars).
+
+chat:
+  auto_reply: true
