@@ -200,6 +200,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           artifact_name: zap-report
           allow_issue_writing: false
+          cmd_options: "-x report_xml.xml"
 
       - name: Stop Django server
         if: always()
@@ -216,7 +217,7 @@ jobs:
             -F "product_name=Charmaway" \
             -F "engagement_name=CI - DAST" \
             -F "scan_type=ZAP Scan" \
-            -F "file=@report_json.json" \
+            -F "file=@report_xml.xml" \
             -F "active=true" \
             -F "verified=false" \
             -F "auto_create_context=true" \
