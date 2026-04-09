@@ -36,7 +36,7 @@ jobs:
           path: pip-audit-report.json
 
       - name: Upload to DefectDojo
-        if: ${{ secrets.DEFECTDOJO_URL != '' }}
+        if: env.DEFECTDOJO_URL != ''
         env:
           DEFECTDOJO_URL: ${{ secrets.DEFECTDOJO_URL }}
           DEFECTDOJO_API_KEY: ${{ secrets.DEFECTDOJO_API_KEY }}
@@ -85,7 +85,7 @@ jobs:
           path: bandit-report.json
 
       - name: Upload to DefectDojo
-        if: ${{ secrets.DEFECTDOJO_URL != '' }}
+        if: env.DEFECTDOJO_URL != ''
         env:
           DEFECTDOJO_URL: ${{ secrets.DEFECTDOJO_URL }}
           DEFECTDOJO_API_KEY: ${{ secrets.DEFECTDOJO_API_KEY }}
@@ -129,7 +129,7 @@ jobs:
           path: trivy-report.json
 
       - name: Upload to DefectDojo
-        if: ${{ secrets.DEFECTDOJO_URL != '' }}
+        if: env.DEFECTDOJO_URL != ''
         env:
           DEFECTDOJO_URL: ${{ secrets.DEFECTDOJO_URL }}
           DEFECTDOJO_API_KEY: ${{ secrets.DEFECTDOJO_API_KEY }}
@@ -204,7 +204,7 @@ jobs:
         run: kill $(cat /tmp/django.pid) 2>/dev/null || true
 
       - name: Upload to DefectDojo
-        if: ${{ secrets.DEFECTDOJO_URL != '' }}
+        if: env.DEFECTDOJO_URL != ''
         env:
           DEFECTDOJO_URL: ${{ secrets.DEFECTDOJO_URL }}
           DEFECTDOJO_API_KEY: ${{ secrets.DEFECTDOJO_API_KEY }}
