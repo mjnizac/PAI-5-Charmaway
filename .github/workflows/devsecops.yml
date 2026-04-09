@@ -51,7 +51,7 @@ jobs:
             -F "verified=false" \
             -F "auto_create_context=true" \
             -F "commit_hash=${{ github.sha }}" \
-            -F "branch_tag=${{ github.ref_name }}"
+            -F "branch_tag=${{ github.ref_name }}" || echo "DefectDojo upload failed (non-blocking)"
 
   # ─────────────────────────────────────────────────────────────
   # Fase 2 — SAST: Static Application Security Testing (Bandit)
@@ -100,7 +100,7 @@ jobs:
             -F "verified=false" \
             -F "auto_create_context=true" \
             -F "commit_hash=${{ github.sha }}" \
-            -F "branch_tag=${{ github.ref_name }}"
+            -F "branch_tag=${{ github.ref_name }}" || echo "DefectDojo upload failed (non-blocking)"
 
   # ─────────────────────────────────────────────────────────────
   # Fase 3 — IaC: Infrastructure as Code scanning (Trivy)
@@ -112,15 +112,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+
       - name: Run Trivy (JSON)
-        uses: aquasecurity/trivy-action@0.29.0
-        with:
-          scan-type: fs
-          scan-ref: .
-          format: json
-          output: trivy-report.json
-          exit-code: "0"
-          severity: CRITICAL,HIGH,MEDIUM
+        run: |
+          trivy fs . \
+            --format json \
+            --output trivy-report.json \
+            --exit-code 0 \
+            --severity CRITICAL,HIGH,MEDIUM
 
       - name: Upload report artifact
         uses: actions/upload-artifact@v4
@@ -144,7 +146,7 @@ jobs:
             -F "verified=false" \
             -F "auto_create_context=true" \
             -F "commit_hash=${{ github.sha }}" \
-            -F "branch_tag=${{ github.ref_name }}"
+            -F "branch_tag=${{ github.ref_name }}" || echo "DefectDojo upload failed (non-blocking)"
 
   # ─────────────────────────────────────────────────────────────
   # Fase 4 — DAST: Dynamic Application Security Testing (ZAP)
@@ -214,9 +216,9 @@ jobs:
             -F "product_name=Charmaway" \
             -F "engagement_name=CI - DAST" \
             -F "scan_type=ZAP Scan" \
-            -F "file=@report_xml.xml" \
+            -F "file=@report_json.json" \
             -F "active=true" \
             -F "verified=false" \
             -F "auto_create_context=true" \
             -F "commit_hash=${{ github.sha }}" \
-            -F "branch_tag=${{ github.ref_name }}"
+            -F "branch_tag=${{ github.ref_name }}" || echo "DefectDojo upload failed (non-blocking)"
